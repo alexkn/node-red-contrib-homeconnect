@@ -60,15 +60,28 @@ module.exports = function(RED) {
                     return;
                 }
 
-                flowContext.set("homeconnect_creds", JSON.parse(body));
-                node.tokens = JSON.parse(body);
+                const json = { ...JSON.parse(body), timestamp: Date.now() };
+                flowContext.set("homeconnect_creds", json);
+                node.tokens = json;
+                console.log(node.tokens);
                 node.getSwaggerClient();
                 // TODO: store tokens permanently
             });
         };
 
         node.getRefreshToken = function() {
-            // TODO: get referesh token
+            request.post({
+                headers: {'content-type' : 'application/x-www-form-urlencoded'},
+                url: credentials.auth.tokenHost + credentials.auth.tokenPath,
+                body: 'grant_type=refresh_token&client_secret=' + credentials.client.client_secret + '&refresh_token=' + node.tokens.refresh_token
+            }, (error, response, body) => {
+                if (!error && response.statusCode == 200) {
+                    const json = { ...JSON.parse(body), timestamp: Date.now() };
+                    flowContext.set("homeconnect_creds", json);
+                    node.tokens = json;
+                    node.getSwaggerClient();
+                }
+            });
         };
 
         node.getSwaggerClient = () => {
