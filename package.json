@@ -1,0 +1,17 @@
+{
+  "name": "node-red-contrib-homeconnect",
+  "version": "0.1.0",
+  "repository": "https://github.com/pckhib/node-red-contrib-homeconnect.git",
+  "author": "Patrick Hieber <patrickhieber92@gmail.com>",
+  "license": "MIT",
+  "node-red": {
+    "nodes": {
+      "home-connect": "src/homeconnect.js"
+    }
+  },
+  "dependencies": {
+    "eventsource": "^1.0.7",
+    "request": "^2.88.0",
+    "swagger-client": "^3.8.22"
+  }
+}

@@ -1,0 +1,85 @@
+<script type="text/javascript">
+    RED.nodes.registerType('HomeConnectCreds', {
+        category: 'config',
+        defaults: {
+            name: { value: '' }
+        },
+        credentials: {
+            client_id: { type: "text", required: true },
+            client_secret: { type: "text", required: true }
+        },
+        label: function () {
+            return this.name || 'Home Connect Creds';
+        }
+    });
+</script>
+<script type="text/x-red" data-template-name="HomeConnectCreds">
+    <div class="form-row">
+        <label for="node-config-input-name"><i class="icon-tag"></i> Name</label>
+        <input type="text" id="node-config-input-name">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-client_id">Client ID</label>
+        <input type="text" id="node-config-input-client_id">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-client_secret">Client Secret</label>
+        <input type="text" id="node-config-input-client_secret">
+    </div>
+</script>
+
+<script type="text/javascript">
+    RED.nodes.registerType('HomeConnect', {
+        category: 'function',
+        color: '#2392d8',
+        icon: 'bridge.png',
+        defaults: {
+            name: { value: '' },
+            creds: { value: '', type: 'HomeConnectCreds', required: true }
+        },
+        inputs: 1,
+        outputs: 1,
+        label: function() {
+            return this.name || "HomeConnect";
+        },
+        oneditprepare: function() {
+            let disableAuthenticationButton = () => {
+                $('#node-config-startAuth')
+                    .addClass('disabled')
+                    .click(function(event) {
+                        event.preventDefault();
+                    });
+            };
+            let enableAuthenticationButton = () => {
+                $('#node-config-startAuth')
+                    .removeClass('disabled')
+                    .unbind('click');
+            };
+
+            let currentUri = window.location;
+            
+            disableAuthenticationButton();
+            $.getJSON('oauth2/' + this.id + '/auth/url', {
+                    protocol: currentUri.protocol,
+                    hostname: currentUri.hostname,
+                    port: currentUri.port || 80
+                }, function(response) {
+                    $('#node-config-startAuth').attr('href', response.url);
+                    enableAuthenticationButton();
+                })
+                .fail(function() {
+                    disableAuthenticationButton();
+                });
+        }
+    });
+</script>
+<script type="text/x-red" data-template-name="HomeConnect">
+    <div class="form-row">
+        <label for="node-input-client_creds">Creds</label>
+        <input type="text" id="node-input-creds">
+    </div>
+    <div class="form-row">
+        <label>&nbsp;</label>
+        <a class="btn" id="node-config-startAuth" href="#" target="_blank">Authenticate to initialize token</a>
+    </div>
+</script>
