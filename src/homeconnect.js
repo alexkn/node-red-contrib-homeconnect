@@ -19,9 +19,11 @@ module.exports = function(RED) {
     function HomeConnectNode(config) {
         RED.nodes.createNode(this, config);
 
-        const node = this;
-
         this.creds = RED.nodes.getNode(config.creds);
+        this.action = config.action;
+        this.haid = config.haid;
+
+        this.status({ fill: 'red', shape: 'ring', text: 'disconnected' });
 
         const credentials = {
             client: {
@@ -36,12 +38,66 @@ module.exports = function(RED) {
         };
 
         const flowContext = this.context().flow;
-        node.tokens = flowContext.get("homeconnect_creds");
+        this.tokens = flowContext.get("homeconnect_creds");
+
+        const node = this;
 
         node.on('input', msg => {
-            // TODO: eventsource
-            // TODO: swagger api
+            if (node.action == 'subscribe') {
+                // TODO: eventsource
+            } else {
+                node.command(node.action, node.haid, node.body)
+                .then(response => {
+                    msg.payload = response.body;
+                    node.send(msg);
+                });
+            }
         });
+
+        node.command = (operationId, haid, body) => {
+            if (node.client != undefined) {
+                let tag;
+                switch (operationId) {
+                    case 'get_home_appliances':
+                    case 'get_specific_appliance':
+                        tag = 'default';
+                        break;
+                    case 'get_active_program':
+                    case 'start_program':
+                    case 'stop_program':
+                    case 'get_active_program_options':
+                    case 'set_active_program_options':
+                    case 'get_active_program_option':
+                    case 'set_active_program_option':
+                    case 'get_selected_program':
+                    case 'set_selected_program':
+                    case 'get_selected_program_options':
+                    case 'set_selected_program_options':
+                    case 'get_selected_program_option':
+                    case 'set_selected_program_option':
+                    case 'get_available_programs':
+                    case 'get_available_program':
+                        tag = 'programs';
+                        break;
+                    case 'get_images':
+                    case 'get_image':
+                        tag = 'images';
+                        break;
+                    case 'get_settings':
+                    case 'get_setting':
+                    case 'set_setting':
+                        tag = 'settings';
+                        break;
+                    case 'get_status':
+                    case 'get_status_value':
+                        tag = 'status_events';
+                        break;
+                    default:
+                        return null;
+                }
+                return node.client.apis[tag][operationId]({ haid, body });
+            }
+        }
 
         node.getAuthorizationUrl = (protocol, hostname, port) => {
             let callbackUrl = protocol + '//' + hostname + (port ? ':' + port : '')
@@ -63,7 +119,6 @@ module.exports = function(RED) {
                 const json = { ...JSON.parse(body), timestamp: Date.now() };
                 flowContext.set("homeconnect_creds", json);
                 node.tokens = json;
-                console.log(node.tokens);
                 node.getSwaggerClient();
                 // TODO: store tokens permanently
             });
@@ -95,7 +150,7 @@ module.exports = function(RED) {
                 })
                 .then(client => {
                     node.client = client;
-                    // TODO: Set node status to green
+                    node.status({ fill: 'green', shape:'dot', text: 'connected' });
                 });
             }
         };

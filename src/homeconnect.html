@@ -35,7 +35,9 @@
         icon: 'bridge.png',
         defaults: {
             name: { value: '' },
-            creds: { value: '', type: 'HomeConnectCreds', required: true }
+            creds: { value: '', type: 'HomeConnectCreds', required: true },
+            action: { value: '', required: true },
+            haid: { value: '' }
         },
         inputs: 1,
         outputs: 1,
@@ -56,8 +58,19 @@
                     .unbind('click');
             };
 
+            $('#node-input-action')
+            .change(function(event) {
+                if (this.value == 'get_home_appliances') {
+                    $('#node-input-haid')
+                    .prop('disabled', true)
+                } else {
+                    $('#node-input-haid')
+                    .prop('disabled', false);
+                }
+            });
+
             let currentUri = window.location;
-            
+
             disableAuthenticationButton();
             $.getJSON('oauth2/' + this.id + '/auth/url', {
                     protocol: currentUri.protocol,
@@ -77,6 +90,17 @@
     <div class="form-row">
         <label for="node-input-client_creds">Creds</label>
         <input type="text" id="node-input-creds">
+    </div>
+    <div class="form-row">
+        <label for="node-input-action">Action</label>
+        <select id="node-input-action">
+            <option value="get_home_appliances">home appliances</option>
+            <option value="get_specific_appliance">specific home appliance</option>
+        </select>
+    </div>
+    <div class="form-row">
+        <label for="node-input-haid">HAID</label>
+        <input type="text" id="node-input-haid">
     </div>
     <div class="form-row">
         <label>&nbsp;</label>
