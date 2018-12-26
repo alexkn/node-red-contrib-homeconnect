@@ -8,11 +8,56 @@ module.exports = function(RED) {
 
         this.client_id = this.credentials.client_id;
         this.client_secret = this.credentials.client_secret;
+        this.tokens = JSON.parse(this.credentials.tokens);
+
+        const auth = {
+            tokenHost: 'https://simulator.home-connect.com',
+            tokenPath: '/security/oauth/token',
+            authorizePath: '/security/oauth/authorize'
+        };
+
+        const globalContext = this.context().global;
+        globalContext.set("homeconnect_creds", this.tokens);
+
+        const node = this;
+
+        node.getAuthorizationUrl = (protocol, hostname, port, clientId, clientSecret) => {
+            let callbackUrl = protocol + '//' + hostname + (port ? ':' + port : '')
+                + '/oauth2/' + node.id + '/auth/callback';
+            node.context().set('callback_url', callbackUrl);
+            node.context().set('client_id', clientId);
+            node.context().set('client_secret', clientSecret);
+            return auth.tokenHost + auth.authorizePath + '?client_id=' + clientId + '&response_type=code&redirect_uri=' + callbackUrl;
+        };
+
+        node.getAuthorizationTokens = (authCode) => {
+            request.post({
+                headers: {'content-type' : 'application/x-www-form-urlencoded'},
+                url: auth.tokenHost + auth.tokenPath,
+                body: 'client_id=' + node.context().get('client_id') + '&client_secret=' + node.context().get('client_secret') + '&grant_type=authorization_code&code=' + authCode
+            }, (error, response, body) => {
+                if (error || response.statusCode != 200) {
+                    return;
+                }
+
+                const json = { ...JSON.parse(body), timestamp: Date.now() };
+                globalContext.set("homeconnect_creds", json);
+                node.tokens = json;
+                // TODO: store tokens permanently
+            });
+        };
+
+        node.getTokens = () => {
+            return {
+                tokens: globalContext.get("homeconnect_creds")
+            };
+        }
     }
     RED.nodes.registerType('HomeConnectCreds', HomeConnectCredsNode, {
         credentials: {
             client_id: { type: "text" },
-            client_secret: { type: "text" }
+            client_secret: { type: "text" },
+            tokens: { type: "text"}
         }
     });
 
@@ -37,8 +82,8 @@ module.exports = function(RED) {
             }
         };
 
-        const flowContext = this.context().flow;
-        this.tokens = flowContext.get("homeconnect_creds");
+        const globalContext = this.context().global;
+        this.tokens = this.creds.tokens;
 
         const node = this;
 
@@ -49,6 +94,10 @@ module.exports = function(RED) {
                 node.command(node.action, node.haid, node.body)
                 .then(response => {
                     msg.payload = response.body;
+                    node.send(msg);
+                })
+                .catch(error => {
+                    msg.payload = error;
                     node.send(msg);
                 });
             }
@@ -99,31 +148,6 @@ module.exports = function(RED) {
             }
         }
 
-        node.getAuthorizationUrl = (protocol, hostname, port) => {
-            let callbackUrl = protocol + '//' + hostname + (port ? ':' + port : '')
-                + '/oauth2/' + node.id + '/auth/callback';
-            node.context().set('callback_url', callbackUrl);
-            return credentials.auth.tokenHost + credentials.auth.authorizePath + '?client_id=' + credentials.client.id + '&response_type=code&redirect_uri=' + callbackUrl;
-        };
-
-        node.getAuthorizationTokens = (authCode) => {
-            request.post({
-                headers: {'content-type' : 'application/x-www-form-urlencoded'},
-                url: credentials.auth.tokenHost + credentials.auth.tokenPath,
-                body: 'client_id=' + credentials.client.id + '&client_secret=' + credentials.client.secret + '&grant_type=authorization_code&code=' + authCode
-            }, (error, response, body) => {
-                if (error || response.statusCode != 200) {
-                    return;
-                }
-
-                const json = { ...JSON.parse(body), timestamp: Date.now() };
-                flowContext.set("homeconnect_creds", json);
-                node.tokens = json;
-                node.getSwaggerClient();
-                // TODO: store tokens permanently
-            });
-        };
-
         node.getRefreshToken = function() {
             request.post({
                 headers: {'content-type' : 'application/x-www-form-urlencoded'},
@@ -132,7 +156,7 @@ module.exports = function(RED) {
             }, (error, response, body) => {
                 if (!error && response.statusCode == 200) {
                     const json = { ...JSON.parse(body), timestamp: Date.now() };
-                    flowContext.set("homeconnect_creds", json);
+                    globalContext.set("homeconnect_creds", json);
                     node.tokens = json;
                     node.getSwaggerClient();
                 }
@@ -151,6 +175,9 @@ module.exports = function(RED) {
                 .then(client => {
                     node.client = client;
                     node.status({ fill: 'green', shape:'dot', text: 'connected' });
+                })
+                .catch(error => {
+                    console.log(error);
                 });
             }
         };
@@ -160,7 +187,7 @@ module.exports = function(RED) {
     RED.nodes.registerType('HomeConnect', HomeConnectNode);
 
     RED.httpAdmin.get('/oauth2/:id/auth/url', (req, res) => {
-        if (!req.query.protocol || !req.query.hostname || !req.query.port) {
+        if (!req.query.protocol || !req.query.hostname || !req.query.port || !req.query.clientId || !req.query.clientSecret) {
             res.sendStatus(400);
             return;
         }
@@ -171,13 +198,8 @@ module.exports = function(RED) {
             return;
         }
 
-        if (!node.credentials.client_id || !node.credentials.client_secret) {
-            res.sendStatus(400);
-            return;
-        }
-
         res.send({
-            'url': node.getAuthorizationUrl(req.query.protocol, req.query.hostname, req.query.port)
+            'url': node.getAuthorizationUrl(req.query.protocol, req.query.hostname, req.query.port, req.query.clientId, req.query.clientSecret)
         });
     });
 
@@ -189,5 +211,16 @@ module.exports = function(RED) {
         }
         node.getAuthorizationTokens(req.query.code);
         res.sendStatus(200);
+    });
+
+    RED.httpAdmin.get('/getTokens/:id', (req, res) => {
+        let node = RED.nodes.getNode(req.params.id);
+        if (!node) {
+            res.sendStatus(404);
+            return;
+        }
+
+        const tokens = node.getTokens();
+        res.send(tokens);
     });
 }

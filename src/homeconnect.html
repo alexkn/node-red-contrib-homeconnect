@@ -6,10 +6,64 @@
         },
         credentials: {
             client_id: { type: "text", required: true },
-            client_secret: { type: "text", required: true }
+            client_secret: { type: "text", required: true },
+            tokens: { type: "text" }
         },
         label: function () {
             return this.name || 'Home Connect Creds';
+        },
+        oneditsave: function() {
+            let currentUri = window.location;
+            
+            let getUrl = () => {
+                $.getJSON('getTokens/' + this.id, {}, function(response) {
+                    this.credentials.tokens = JSON.stringify(response.tokens);
+                    $("#node-config-input-tokens").val(JSON.stringify(response.tokens));
+                })
+                .fail(function() {
+                });
+            };
+            getUrl();
+        },
+        oneditprepare: function() {
+            let disableAuthenticationButton = () => {
+                $('#node-config-startAuth')
+                    .addClass('disabled')
+                    .click(function(event) {
+                        event.preventDefault();
+                    });
+            };
+            let enableAuthenticationButton = () => {
+                $('#node-config-startAuth')
+                    .removeClass('disabled')
+                    .unbind('click');
+            };
+
+            let currentUri = window.location;
+
+            $('#node-config-input-client_id')
+            .change(function(event) {
+                getUrl();
+            });
+            
+            disableAuthenticationButton();
+            
+            let getUrl = () => {
+                $.getJSON('oauth2/' + this.id + '/auth/url', {
+                    protocol: currentUri.protocol,
+                    hostname: currentUri.hostname,
+                    port: currentUri.port || 80,
+                    clientId: $("#node-config-input-client_id").val(),
+                    clientSecret: $("#node-config-input-client_secret").val()
+                }, function(response) {
+                    $('#node-config-startAuth').attr('href', response.url);
+                    enableAuthenticationButton();
+                })
+                .fail(function() {
+                    disableAuthenticationButton();
+                });
+            };
+            getUrl();
         }
     });
 </script>
@@ -25,6 +79,14 @@
     <div class="form-row">
         <label for="node-config-input-client_secret">Client Secret</label>
         <input type="text" id="node-config-input-client_secret">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-tokens">Tokens</label>
+        <input type="text" id="node-config-input-tokens">
+    </div>
+    <div class="form-row">
+        <label>&nbsp;</label>
+        <a class="btn" id="node-config-startAuth" href="#" target="_blank">Authenticate to initialize token</a>
     </div>
 </script>
 
@@ -45,19 +107,6 @@
             return this.name || "HomeConnect";
         },
         oneditprepare: function() {
-            let disableAuthenticationButton = () => {
-                $('#node-config-startAuth')
-                    .addClass('disabled')
-                    .click(function(event) {
-                        event.preventDefault();
-                    });
-            };
-            let enableAuthenticationButton = () => {
-                $('#node-config-startAuth')
-                    .removeClass('disabled')
-                    .unbind('click');
-            };
-
             $('#node-input-action')
             .change(function(event) {
                 if (this.value == 'get_home_appliances') {
@@ -68,21 +117,6 @@
                     .prop('disabled', false);
                 }
             });
-
-            let currentUri = window.location;
-
-            disableAuthenticationButton();
-            $.getJSON('oauth2/' + this.id + '/auth/url', {
-                    protocol: currentUri.protocol,
-                    hostname: currentUri.hostname,
-                    port: currentUri.port || 80
-                }, function(response) {
-                    $('#node-config-startAuth').attr('href', response.url);
-                    enableAuthenticationButton();
-                })
-                .fail(function() {
-                    disableAuthenticationButton();
-                });
         }
     });
 </script>
@@ -101,9 +135,5 @@
     <div class="form-row">
         <label for="node-input-haid">HAID</label>
         <input type="text" id="node-input-haid">
-    </div>
-    <div class="form-row">
-        <label>&nbsp;</label>
-        <a class="btn" id="node-config-startAuth" href="#" target="_blank">Authenticate to initialize token</a>
     </div>
 </script>
