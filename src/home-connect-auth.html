@@ -2,7 +2,8 @@
     RED.nodes.registerType('OAuth2', {
         category: 'HomeConnect',
         defaults: {
-            name: { value: '' }
+            name: { value: '' },
+            simulation_mode: { value: false }
         },
         inputs: 0,
         outputs: 1,
@@ -41,5 +42,9 @@
     <div class="form-row">
         <label for="node-input-client_secret">Client Secret</label>
         <input type="text" id="node-input-client_secret">
+    </div>
+    <div class="form-row">
+        <label for="node-input-simulation_mode">Use Simulation</label>
+        <input type="checkbox" id="node-input-simulation_mode">
     </div>
 </script>

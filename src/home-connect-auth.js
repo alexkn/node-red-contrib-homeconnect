@@ -5,11 +5,17 @@ module.exports = function (RED) {
         RED.nodes.createNode(this, config);
 
         this.name = config.name;
+        this.simulation_mode = config.simulation_mode;
         this.client_id = this.credentials.client_id;
         this.client_secret = this.credentials.client_secret;
 
+        this.context().flow.set('homeconnect_simulation', this.simulation_mode);
+
         const auth = {
-            tokenHost: 'https://simulator.home-connect.com',
+            tokenHost: {
+                simulation: 'https://simulator.home-connect.com',
+                production: 'https://api.home-connect.com'
+            },
             tokenPath: '/security/oauth/token',
             authorizePath: '/security/oauth/authorize'
         }
@@ -28,16 +34,19 @@ module.exports = function (RED) {
 
             node.context().set('callback_url', callbackUrl);
 
-            return auth.tokenHost + auth.authorizePath + 
+            let tokenHost = node.context().flow.get('homeconnect_simulation') ? auth.tokenHost.simulation : auth.tokenHost.production;
+
+            return tokenHost + auth.authorizePath + 
                 '?client_id=' + client_id + 
                 '&response_type=code&redirect_uri=' + callbackUrl;
         };
 
         node.getTokens = (authCode) => {
             let n = RED.nodes.getNode(id);
+            let tokenHost = node.context().flow.get('homeconnect_simulation') ? auth.tokenHost.simulation : auth.tokenHost.production;
             request.post({
                 headers: {'content-type' : 'application/x-www-form-urlencoded'},
-                url: auth.tokenHost + auth.tokenPath,
+                url: tokenHost + auth.tokenPath,
                 body: 'client_id=' + n.client_id + 
                     '&client_secret=' + n.client_secret + 
                     '&grant_type=authorization_code&code=' + authCode
@@ -50,7 +59,10 @@ module.exports = function (RED) {
 
                 n.tokens = { ...JSON.parse(body), timestamp: Date.now() };
                 n.send({
-                    access_token: n.tokens
+                    topic: 'oauth2',
+                    payload: {
+                        access_token: n.tokens.access_token
+                    }
                 });
             });
         }
