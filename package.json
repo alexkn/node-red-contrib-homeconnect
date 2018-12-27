@@ -6,7 +6,8 @@
   "license": "MIT",
   "node-red": {
     "nodes": {
-      "home-connect-auth": "src/home-connect-auth.js"
+      "home-connect-auth": "src/home-connect-auth.js",
+      "home-connect-request": "src/home-connect-request.js"
     }
   },
   "dependencies": {

@@ -1,0 +1,133 @@
+<script type="text/javascript">
+    const data = {
+        default: [
+            {
+                value: 'get_home_appliances',
+                text: 'get_home_appliances'
+            },
+            {
+                value: 'get_specific_appliance',
+                text: 'get_specific_appliance'
+            }
+        ],
+        programs: [
+            {
+                value: 'get_active_program',
+                text: 'get_active_program'
+            },
+            {
+                value: 'stop_program',
+                text: 'stop_program'
+            },
+            {
+                value: 'get_active_program_options',
+                text: 'get_active_program_options'
+            },
+            {
+                value: 'get_selected_program',
+                text: 'get_selected_program'
+            },
+            {
+                value: 'get_selected_program_options',
+                text: 'get_selected_program_options'
+            },
+            {
+                value: 'get_available_programs',
+                text: 'get_available_programs'
+            }
+        ],
+        settings: [
+            {
+                value: 'get_settings',
+                text: 'get_settings'
+            }
+        ],
+        status_events: [
+            {
+                value: 'get_status',
+                text: 'get_status'
+            }
+        ],
+        images: [
+            {
+                value: 'get_images',
+                text: 'get_images'
+            }
+        ]
+    };
+
+    RED.nodes.registerType('Request', {
+        category: 'HomeConnect',
+        defaults: {
+            name: { value: '' },
+            tag: { value: 'default', required: true },
+            operationId: { value: '', required: true },
+            haid: { value: '' }
+        },
+        inputs: 1,
+        outputs: 1,
+        label: function () {
+            return this.name || this.operationId || 'request';
+        },
+        color: '#2392d8',
+        icon: 'bridge.png',
+        oneditprepare: function () {
+            let checkForHAID = () => {
+                let operationId = $('#node-input-operationId').val();
+                if (operationId === 'get_home_appliances') {
+                    $('#node-input-haid').attr('disabled', true);
+                } else {
+                    $('#node-input-haid').attr('disabled', false);
+                }
+            };
+            
+            $('#node-input-tag')
+            .change(function () {
+                let tag = $('#node-input-tag').val();
+                
+                if (tag != undefined) {
+                    let items = data[tag];
+                    $('#node-input-operationId').empty();
+                    $.each(items, function (i, item) {
+                        $('#node-input-operationId').append($('<option>', {
+                            value: item.value,
+                            text : item.text
+                        }));
+                    });
+                }
+
+                checkForHAID();
+            });
+
+            $('#node-input-operationId')
+            .change(function () {
+                checkForHAID();
+            });
+        }
+    });
+</script>
+<script type="text/x-red" data-template-name="Request">
+    <div class="form-row">
+        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+        <input type="text" id="node-input-name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-tag">tag</label>
+        <select name="node-input-tag" id="node-input-tag">
+            <option value="default">General</option>
+            <option value="programs">Program</option>
+            <option value="settings">Settings</option>
+            <option value="status_events">Status</option>
+            <option value="images">Images</option>
+        </select>
+    </div>
+    <div class="form-row">
+        <label for="node-input-operationId">Action</label>
+        <select name="node-input-operationId" id="node-input-operationId">
+        </select>
+    </div>
+    <div class="form-row">
+        <label for="node-input-haid">HAID</label>
+        <input type="text" id="node-input-haid">
+    </div>
+</script>
