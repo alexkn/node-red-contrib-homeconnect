@@ -1,0 +1,45 @@
+<script type="text/javascript">
+    RED.nodes.registerType('OAuth2', {
+        category: 'HomeConnect',
+        defaults: {
+            name: { value: '' }
+        },
+        inputs: 0,
+        outputs: 1,
+        credentials: {
+            client_id: { type: 'text', required: true },
+            client_secret: { type: 'text', required: true }
+        },
+        label: function () {
+            return this.name || 'oauth2';
+        },
+        color: '#2392d8',
+        icon: 'bridge.png',
+        button: {
+            onclick: function() {
+                let currentUri = window.location;
+                $.getJSON('oauth2/' + this.id + '/auth/url', {
+                    protocol: currentUri.protocol,
+                    hostname: currentUri.hostname,
+                    port: currentUri.port || 80
+                }, function(response) {
+                    window.open(response.url);
+                });
+            }
+        }
+    });
+</script>
+<script type="text/x-red" data-template-name="OAuth2">
+    <div class="form-row">
+        <label for="node-config-input-name"><i class="icon-tag"></i> Name</label>
+        <input type="text" id="node-input-name">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-client_id">Client ID</label>
+        <input type="text" id="node-input-client_id">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-client_secret">Client Secret</label>
+        <input type="text" id="node-input-client_secret">
+    </div>
+</script>
