@@ -1,5 +1,6 @@
 module.exports = function (RED) {
     const request = require('request');
+    const fs = require('fs');
 
     function OAuth2(config) {
         RED.nodes.createNode(this, config);
@@ -58,6 +59,13 @@ module.exports = function (RED) {
                 n.status({ fill: 'green', shape:'dot', text: 'authorized' });
 
                 n.tokens = { ...JSON.parse(body), timestamp: Date.now() };
+                
+                fs.writeFile('homeconnect_tokens.json', JSON.stringify(n.tokens), (err) => {
+                    if (err) {
+                        console.log(err);
+                    }
+                });
+
                 n.send({
                     topic: 'oauth2',
                     payload: {
@@ -66,6 +74,54 @@ module.exports = function (RED) {
                 });
             });
         }
+
+        node.refreshTokens = () => {
+            let n = RED.nodes.getNode(id);
+            let tokenHost = node.context().flow.get('homeconnect_simulation') ? auth.tokenHost.simulation : auth.tokenHost.production;
+            request.post({
+                headers: {'content-type' : 'application/x-www-form-urlencoded'},
+                url: tokenHost + auth.tokenPath,
+                body: 'grant_type=refresh_token&client_secret=' + n.client_secret + '&refresh_token=' + n.tokens.refresh_token
+            }, (error, response, body) => {
+                if (error || response.statusCode != 200) {
+                    return;
+                }
+
+                n.status({ fill: 'green', shape:'dot', text: 'authorized' });
+
+                n.tokens = { ...JSON.parse(body), timestamp: Date.now() };
+                
+                fs.writeFile('homeconnect_tokens.json', JSON.stringify(n.tokens), (err) => {
+                    if (err) {
+                        console.log(err);
+                    }
+                });
+
+                n.send({
+                    topic: 'oauth2',
+                    payload: {
+                        access_token: n.tokens.access_token
+                    }
+                });
+            });
+        };
+
+        node.loadTokenFile = () => {
+            try {
+            let content = fs.readFileSync('homeconnect_tokens.json', 'utf8');
+            node.tokens = JSON.parse(content);
+
+            if (node.tokens != undefined) {
+                node.refreshTokens();
+            }
+            } catch (err) {
+
+            }
+        };
+
+        RED.events.on("nodes-started", () => {
+            node.loadTokenFile();
+        });
 
         RED.httpAdmin.get('/oauth2/auth/callback', (req, res) => {
             let n = RED.nodes.getNode(id);
