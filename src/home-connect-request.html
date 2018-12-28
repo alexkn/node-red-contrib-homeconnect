@@ -1,59 +1,111 @@
 <script type="text/javascript">
     const data = {
-        default: [
-            {
-                value: 'get_home_appliances',
-                text: 'get_home_appliances'
+        default: {
+            'get_home_appliances': {
+                text: 'get_home_appliances',
+                scopes: []
             },
-            {
-                value: 'get_specific_appliance',
-                text: 'get_specific_appliance'
+            'get_specific_appliance': {
+                text: 'get_specific_appliance',
+                scopes: ['haid']
             }
-        ],
-        programs: [
-            {
-                value: 'get_active_program',
-                text: 'get_active_program'
+        },
+        programs: {
+            'get_active_program': {
+                text: 'get_active_program',
+                scopes: ['haid']
             },
-            {
-                value: 'stop_program',
-                text: 'stop_program'
+            'start_program': {
+                text: 'start_program',
+                scopes: ['haid', 'body']
             },
-            {
-                value: 'get_active_program_options',
-                text: 'get_active_program_options'
+            'stop_program': {
+                text: 'stop_program',
+                scopes: ['haid']
             },
-            {
-                value: 'get_selected_program',
-                text: 'get_selected_program'
+            'get_active_program_options': {
+                text: 'get_active_program_options',
+                scopes: ['haid']
             },
-            {
-                value: 'get_selected_program_options',
-                text: 'get_selected_program_options'
+            'set_active_program_options': {
+                text: 'set_active_program_options',
+                scopes: ['haid', 'body']
             },
-            {
-                value: 'get_available_programs',
-                text: 'get_available_programs'
+            'get_active_program_option': {
+                text: 'get_active_program_option',
+                scopes: ['haid', 'optionkey']
+            },
+            'set_active_program_option': {
+                text: 'set_active_program_option',
+                scopes: ['haid', 'body', 'optionkey']
+            },
+            'get_selected_program': {
+                text: 'get_selected_program',
+                scopes: ['haid']
+            },
+            'set_selected_program': {
+                text: 'set_selected_program',
+                scopes: []
+            },
+            'get_selected_program_options': {
+                text: 'get_selected_program_options',
+                scopes: ['haid']
+            },
+            'set_selected_program_options': {
+                text: 'set_selected_program_options',
+                scopes: ['haid', 'body']
+            },
+            'get_selected_program_option': {
+                text: 'get_selected_program_option',
+                scopes: ['haid', 'optionkey']
+            },
+            'set_selected_program_option': {
+                text: 'set_selected_program_option',
+                scopes: ['haid', 'body', 'optionkey']
+            },
+            'get_available_programs': {
+                text: 'get_available_programs',
+                scopes: ['haid']
+            },
+            'get_available_program': {
+                text: 'get_available_program',
+                scopes: ['haid', 'programkey']
+            },
+        },
+        settings: {
+            'get_settings': {
+                text: 'get_settings',
+                scopes: ['haid']
+            },
+            'get_setting': {
+                text: 'get_setting',
+                scopes: ['haid', 'settingkey']
+            },
+            'set_setting': {
+                text: 'set_setting',
+                scopes: ['haid', 'body', 'settingkey']
             }
-        ],
-        settings: [
-            {
-                value: 'get_settings',
-                text: 'get_settings'
+        },
+        status_events: {
+            'get_status': {
+                text: 'get_status',
+                scopes: ['haid']
+            },
+            'get_status_value': {
+                text: 'get_status_value',
+                scopes: ['haid', 'statuskey']
             }
-        ],
-        status_events: [
-            {
-                value: 'get_status',
-                text: 'get_status'
+        },
+        images: {
+            'get_images': {
+                text: 'get_images',
+                scopes: ['haid']
+            },
+            'get_image': {
+                text: 'get_image',
+                scopes: ['haid', 'imagekey']
             }
-        ],
-        images: [
-            {
-                value: 'get_images',
-                text: 'get_images'
-            }
-        ]
+        }
     };
 
     RED.nodes.registerType('Request', {
@@ -62,7 +114,13 @@
             name: { value: '' },
             tag: { value: 'default', required: true },
             operationId: { value: '', required: true },
-            haid: { value: '' }
+            haid: { value: '' },
+            body: { value: '' },
+            optionkey: { value: '' },
+            programkey: { value: '' },
+            settingkey: { value: '' },
+            statuskey: { value: '' },
+            imagekey: { value: '' }
         },
         inputs: 1,
         outputs: 1,
@@ -73,11 +131,58 @@
         icon: 'bridge.png',
         oneditprepare: function () {
             let checkForHAID = () => {
+                let tag = $('#node-input-tag').val();
                 let operationId = $('#node-input-operationId').val();
-                if (operationId === 'get_home_appliances') {
+                let item = data[tag][operationId];
+
+                if ($.inArray('haid', item.scopes) == -1) {
                     $('#node-input-haid').attr('disabled', true);
                 } else {
                     $('#node-input-haid').attr('disabled', false);
+                }
+            };
+
+            let checkForBody = () => {
+                let tag = $('#node-input-tag').val();
+                let operationId = $('#node-input-operationId').val();
+                let item = data[tag][operationId];
+
+                if ($.inArray('body', item.scopes) == -1) {
+                    $('#node-input-body').attr('disabled', true);
+                } else {
+                    $('#node-input-body').attr('disabled', false);
+                }
+            };
+
+            let checkForOptionKey = () => {
+                let tag = $('#node-input-tag').val();
+                let operationId = $('#node-input-operationId').val();
+                let item = data[tag][operationId];
+
+                if ($.inArray('optionkey', item.scopes) == -1) {
+                    $('#node-input-optionkey').css('display', 'none');
+                } else {
+                    $('#node-input-optionkey').css('display', 'block');
+                }
+                if ($.inArray('programkey', item.scopes) == -1) {
+                    $('#node-input-programkey').css('display', 'none');
+                } else {
+                    $('#node-input-programkey').css('display', 'block');
+                }
+                if ($.inArray('settingkey', item.scopes) == -1) {
+                    $('#node-input-settingkey').css('display', 'none');
+                } else {
+                    $('#node-input-settingkey').css('display', 'block');
+                }
+                if ($.inArray('statuskey', item.scopes) == -1) {
+                    $('#node-input-statuskey').css('display', 'none');
+                } else {
+                    $('#node-input-statuskey').css('display', 'block');
+                }
+                if ($.inArray('imagekey', item.scopes) == -1) {
+                    $('#node-input-imagekey').css('display', 'none');
+                } else {
+                    $('#node-input-imagekey').css('display', 'block');
                 }
             };
             
@@ -88,20 +193,24 @@
                 if (tag != undefined) {
                     let items = data[tag];
                     $('#node-input-operationId').empty();
-                    $.each(items, function (i, item) {
+                    $.each(items, function (key, item) {
                         $('#node-input-operationId').append($('<option>', {
-                            value: item.value,
+                            value: key,
                             text : item.text
                         }));
                     });
                 }
 
                 checkForHAID();
+                checkForBody();
+                checkForOptionKey();
             });
 
             $('#node-input-operationId')
             .change(function () {
                 checkForHAID();
+                checkForBody();
+                checkForOptionKey();
             });
         }
     });
@@ -112,7 +221,7 @@
         <input type="text" id="node-input-name">
     </div>
     <div class="form-row">
-        <label for="node-input-tag">tag</label>
+        <label for="node-input-tag">Tag</label>
         <select name="node-input-tag" id="node-input-tag">
             <option value="default">General</option>
             <option value="programs">Program</option>
@@ -129,5 +238,17 @@
     <div class="form-row">
         <label for="node-input-haid">HAID</label>
         <input type="text" id="node-input-haid">
+    </div>
+    <div class="form-row">
+        <label for="node-input-optionkey">Option Key</label>
+        <input type="text" id="node-input-optionkey">
+        <input type="text" id="node-input-programkey">
+        <input type="text" id="node-input-statuskey">
+        <input type="text" id="node-input-imagekey">
+        <input type="text" id="node-input-settingkey">
+    </div>
+    <div class=""form-row>
+        <label for="node-input-body">Body</label>
+        <textarea rows="4" cols="60" style="width:90%;" id="node-input-body"></textarea>
     </div>
 </script>

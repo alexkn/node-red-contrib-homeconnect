@@ -8,6 +8,12 @@ module.exports = function (RED) {
         this.tag = config.tag;
         this.operationId = config.operationId;
         this.haid = config.haid;
+        this.optionkey = config.optionkey;
+        this.programkey = config.programkey;
+        this.settingkey = config.settingkey;
+        this.statuskey = config.statuskey;
+        this.imagekey = config.imagekey;
+        this.body = config.body;
 
         const urls = {
             simulation: 'https://apiclient.home-connect.com/hcsdk.yaml',
@@ -23,10 +29,18 @@ module.exports = function (RED) {
                 node.context().set('access_token', msg.payload.access_token);
                 node.getSwaggerClient();
             } else {
-                node.client.apis[node.tag][node.operationId]({ haid: node.haid })
+                node.client.apis[node.tag][node.operationId]({
+                    haid: node.haid,
+                    body: node.body,
+                    optionkey: node.optionkey,
+                    programkey: node.programkey,
+                    statuskey: node.statuskey,
+                    imagekey: node.imagekey,
+                    settingkey: node.settingkey
+                })
                 .then(response => {
                     node.send({
-                        payload: response.body
+                        payload: response.data
                     });
                 })
                 .catch(error => {
@@ -42,7 +56,7 @@ module.exports = function (RED) {
                 SwaggerClient({
                     url: node.context().flow.get('homeconnect_simulation') ? urls.simulation : urls.production,
                     requestInterceptor: req => {
-                        req.headers['accept'] = 'application/vnd.bsh.sdk.v1+json',
+                        req.headers['accept'] = 'application/vnd.bsh.sdk.v1+json, image/jpeg',
                         req.headers['authorization'] = 'Bearer ' + node.context().get('access_token')
                     }
                 })
