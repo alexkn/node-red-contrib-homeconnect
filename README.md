@@ -1,4 +1,5 @@
 # node-red-contrib-homeconnect
+This nodes for Node-RED allow to control devices which are connected to the [Home Connect](https://www.home-connect.com) system.
 
 ![node-red-contrib-homeconnect](https://user-images.githubusercontent.com/17932877/50650925-1db3d280-0f82-11e9-9df9-9322751dee8e.jpg)
 
