@@ -1,7 +1,7 @@
 # node-red-contrib-homeconnect
 This nodes for Node-RED allow to control devices which are connected to the [Home Connect](https://www.home-connect.com) system.
 
-![node-red-contrib-homeconnect](https://user-images.githubusercontent.com/17932877/50650925-1db3d280-0f82-11e9-9df9-9322751dee8e.jpg)
+![node-red-contrib-homeconnect](https://user-images.githubusercontent.com/17932877/50652082-9ff1c600-0f85-11e9-990c-a0f13363afcd.jpg)
 
 ### Installation
 To use the HomeConnect nodes a Client ID and Client Secret are required. Those can be received from the home connect developer page:
