@@ -50,9 +50,12 @@ module.exports = function (RED) {
                 url: tokenHost + auth.tokenPath,
                 body: 'client_id=' + n.client_id + 
                     '&client_secret=' + n.client_secret + 
-                    '&grant_type=authorization_code&code=' + authCode
+                    '&grant_type=authorization_code&code=' + authCode +
+                    '&redirect_uri=' + node.context().get('callback_url')
             }, (error, response, body) => {
+
                 if (error || response.statusCode != 200) {
+                    n.status({ fill: 'red', shape:'dot', text: 'getTokens failed' });
                     return;
                 }
 
@@ -137,7 +140,7 @@ module.exports = function (RED) {
     });
 
     RED.httpAdmin.get('/oauth2/:id/auth/url', (req, res) => {
-        if (!req.query.protocol || !req.query.hostname || !req.query.port) {
+        if (!req.query.protocol || !req.query.hostname) {
             res.sendStatus(400);
             return;
         }
