@@ -39,8 +39,12 @@ module.exports = function (RED) {
                     settingkey: node.settingkey
                 })
                 .then(response => {
+                    let res = response.data;
+                    try {
+                        res = JSON.parse(res);
+                    } catch (error) {}
                     node.send({
-                        payload: response.data
+                        payload: res
                     });
                 })
                 .catch(error => {
