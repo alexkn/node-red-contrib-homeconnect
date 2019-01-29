@@ -19,10 +19,17 @@
         button: {
             onclick: function() {
                 let currentUri = window.location;
+                let port;
+                if (currentUri.protocol === 'https' && currentUri.port && currentUri.port !== 443) {
+                    port = currentUri.port;
+                } else if (currentUri.protocol === 'http' && currentUri.port && currentUri.port !== 80) {
+                    port = currentUri.port;
+                }
+
                 $.getJSON('oauth2/' + this.id + '/auth/url', {
                     protocol: currentUri.protocol,
                     hostname: currentUri.hostname,
-                    port: currentUri.port || 80
+                    port: port
                 }, function(response) {
                     window.open(response.url);
                 });
