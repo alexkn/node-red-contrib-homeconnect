@@ -21,8 +21,6 @@ module.exports = function (RED) {
             authorizePath: '/security/oauth/authorize'
         }
 
-        const id = this.id;
-
         this.status({ fill: 'red', shape: 'ring', text: 'unauthorized' });
 
         const node = this;
@@ -43,67 +41,65 @@ module.exports = function (RED) {
         };
 
         node.getTokens = (authCode) => {
-            let n = RED.nodes.getNode(id);
             let tokenHost = node.context().flow.get('homeconnect_simulation') ? auth.tokenHost.simulation : auth.tokenHost.production;
             request.post({
                 headers: {'content-type' : 'application/x-www-form-urlencoded'},
                 url: tokenHost + auth.tokenPath,
-                body: 'client_id=' + n.client_id + 
-                    '&client_secret=' + n.client_secret + 
+                body: 'client_id=' + node.client_id + 
+                    '&client_secret=' + node.client_secret + 
                     '&grant_type=authorization_code&code=' + authCode +
                     '&redirect_uri=' + node.context().get('callback_url')
             }, (error, response, body) => {
 
                 if (error || response.statusCode != 200) {
-                    n.status({ fill: 'red', shape:'dot', text: 'getTokens failed' });
+                    node.status({ fill: 'red', shape:'dot', text: 'getTokens failed' });
                     return;
                 }
 
-                n.status({ fill: 'green', shape:'dot', text: 'authorized' });
+                node.status({ fill: 'green', shape:'dot', text: 'authorized' });
 
-                n.tokens = { ...JSON.parse(body), timestamp: Date.now() };
+                node.tokens = { ...JSON.parse(body), timestamp: Date.now() };
                 
-                fs.writeFile('homeconnect_tokens.json', JSON.stringify(n.tokens), (err) => {
+                fs.writeFile('homeconnect_tokens.json', JSON.stringify(node.tokens), (err) => {
                     if (err) {
                         console.log(err);
                     }
                 });
 
-                n.send({
+                node.send({
                     topic: 'oauth2',
                     payload: {
-                        access_token: n.tokens.access_token
+                        access_token: node.tokens.access_token
                     }
                 });
             });
         }
 
         node.refreshTokens = () => {
-            let n = RED.nodes.getNode(id);
             let tokenHost = node.context().flow.get('homeconnect_simulation') ? auth.tokenHost.simulation : auth.tokenHost.production;
             request.post({
                 headers: {'content-type' : 'application/x-www-form-urlencoded'},
                 url: tokenHost + auth.tokenPath,
-                body: 'grant_type=refresh_token&client_secret=' + n.client_secret + '&refresh_token=' + n.tokens.refresh_token
+                body: 'grant_type=refresh_token&client_secret=' + node.client_secret + '&refresh_token=' + node.tokens.refresh_token
             }, (error, response, body) => {
                 if (error || response.statusCode != 200) {
                     return;
                 }
 
-                n.status({ fill: 'green', shape:'dot', text: 'authorized' });
+                node.status({ fill: 'green', shape:'dot', text: 'authorized' });
 
-                n.tokens = { ...JSON.parse(body), timestamp: Date.now() };
+                node.tokens = { ...JSON.parse(body), timestamp: Date.now() };
                 
-                fs.writeFile('homeconnect_tokens.json', JSON.stringify(n.tokens), (err) => {
+                fs.writeFile('homeconnect_tokens.json', JSON.stringify(node.tokens), (err) => {
                     if (err) {
                         console.log(err);
                     }
                 });
 
-                n.send({
+                node.send({
                     topic: 'oauth2',
                     payload: {
-                        access_token: n.tokens.access_token
+                        access_token: node.tokens.access_token
                     }
                 });
             });
@@ -127,8 +123,7 @@ module.exports = function (RED) {
         });
 
         RED.httpAdmin.get('/oauth2/auth/callback', (req, res) => {
-            let n = RED.nodes.getNode(id);
-            n.getTokens(req.query.code);
+            node.getTokens(req.query.code);
             res.sendStatus(200);
         });
     }
