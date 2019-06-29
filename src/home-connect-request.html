@@ -187,6 +187,13 @@
                 }
             };
 
+            let setHelpLink = () => {
+                let tag = $('#node-input-tag').val();
+                let operationId = $('#node-input-operationId').val();
+
+                $('#node-help-operationId').attr('href', 'https://apiclient.home-connect.com/#/' + tag + '/' + operationId);
+            };
+
             $('#node-input-tag')
             .change(function () {
                 let tag = $('#node-input-tag').val();
@@ -208,6 +215,7 @@
                 checkForHAID();
                 checkForBody();
                 checkForKey();
+                setHelpLink();
             });
 
             $('#node-input-operationId')
@@ -215,6 +223,7 @@
                 checkForHAID();
                 checkForBody();
                 checkForKey();
+                setHelpLink();
             });
         }
     });
@@ -267,6 +276,7 @@
             <option value="get_images">get_images</option>
             <option value="get_image">get_image</option>
         </select>
+        <a target="_blank" id="node-help-operationId" href="#">Help</a>
     </div>
     <div class="form-row">
         <label for="node-input-haid">HAID</label>
