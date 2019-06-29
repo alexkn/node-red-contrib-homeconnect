@@ -20,17 +20,16 @@ module.exports = function (RED) {
             return getHost(node.simulation_mode);
         }
 
-        node.getAuthorizationUrl = (protocol, hostname, port, client_id) => {
+        node.getCallbackUrl = (protocol, hostname, port) => {
+            return protocol + '//' + hostname + (port ? ':' + port : '') + '/oauth2/auth/callback';
+        }
+
+        node.getAuthorizationUrl = (protocol, hostname, port, client_id, callback_url) => {
             node.status({ fill: 'yellow', shape: 'ring', text: 'authorizing...' });
-
-            let callbackUrl = protocol + '//' + hostname + (port ? ':' + port : '')
-                + '/oauth2/auth/callback';
-
-            node.context().set('callback_url', callbackUrl);
 
             return node.getHost() + '/security/oauth/authorize' + 
                 '?client_id=' + client_id + 
-                '&response_type=code&redirect_uri=' + callbackUrl;
+                '&response_type=code&redirect_uri=' + callback_url;
         };
 
         node.getTokens = (authCode) => {
@@ -40,7 +39,7 @@ module.exports = function (RED) {
                 body: 'client_id=' + node.client_id + 
                     '&client_secret=' + node.client_secret + 
                     '&grant_type=authorization_code&code=' + authCode +
-                    '&redirect_uri=' + node.context().get('callback_url')
+                    '&redirect_uri=' + runningAuth.callback_url
             }, (error, response, body) => {
 
                 if (error || response.statusCode != 200) {
@@ -120,6 +119,7 @@ module.exports = function (RED) {
         
         RED.httpAdmin.get('/oauth2/auth/callback', (req, res) => {
             node.getTokens(req.query.code);
+            runningAuth = {};
             res.sendStatus(200);
         });
     }
@@ -138,6 +138,8 @@ module.exports = function (RED) {
         }
     }
 
+    let runningAuth = {};
+
     RED.httpAdmin.get('/oauth2/:id/auth/url', (req, res) => {
         if (!req.query.protocol || !req.query.hostname) {
             res.sendStatus(400);
@@ -152,7 +154,9 @@ module.exports = function (RED) {
 
         let client_id = node.client_id;
 
-        const url = node.getAuthorizationUrl(req.query.protocol, req.query.hostname, req.query.port, client_id);
+        runningAuth.callback_url = node.getCallbackUrl(req.query.protocol, req.query.hostname, req.query.port);
+
+        const url = node.getAuthorizationUrl(req.query.protocol, req.query.hostname, req.query.port, client_id, runningAuth.callback_url);
         res.send({
             'url': url
         });
