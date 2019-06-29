@@ -52,6 +52,7 @@ module.exports = function (RED) {
             }, (error, response, body) => {
 
                 if (error || response.statusCode != 200) {
+                    node.error('getTokens failed: ' + body);
                     node.status({ fill: 'red', shape:'dot', text: 'getTokens failed' });
                     return;
                 }
@@ -62,7 +63,7 @@ module.exports = function (RED) {
                 
                 fs.writeFile(RED.settings.userDir + '/homeconnect_tokens.json', JSON.stringify(node.tokens), (err) => {
                     if (err) {
-                        console.log(err);
+                        node.error(err);
                     }
                 });
 
@@ -83,6 +84,7 @@ module.exports = function (RED) {
                 body: 'grant_type=refresh_token&client_secret=' + node.client_secret + '&refresh_token=' + node.tokens.refresh_token
             }, (error, response, body) => {
                 if (error || response.statusCode != 200) {
+                    node.error('refreshTokens failed: ' + body);
                     return;
                 }
 
@@ -92,7 +94,7 @@ module.exports = function (RED) {
                 
                 fs.writeFile(RED.settings.userDir + '/homeconnect_tokens.json', JSON.stringify(node.tokens), (err) => {
                     if (err) {
-                        console.log(err);
+                        node.error(err);
                     }
                 });
 
@@ -107,14 +109,17 @@ module.exports = function (RED) {
 
         node.loadTokenFile = () => {
             try {
-                let content = fs.readFileSync(RED.settings.userDir + '/homeconnect_tokens.json', 'utf8');
-                node.tokens = JSON.parse(content);
-
-                if (node.tokens != undefined) {
-                    node.refreshTokens();
+                let path = RED.settings.userDir + '/homeconnect_tokens.json';
+                if (fs.existsSync(path)) {
+                    let content = fs.readFileSync(path, 'utf8');
+                    node.tokens = JSON.parse(content);
+    
+                    if (node.tokens != undefined) {
+                        node.refreshTokens();
+                    }
                 }
             } catch (err) {
-
+                node.error(err);
             }
         };
 
