@@ -116,12 +116,6 @@ module.exports = function (RED) {
         RED.events.on("nodes-started", () => {
             node.loadTokenFile();
         });
-        
-        RED.httpAdmin.get('/oauth2/auth/callback', (req, res) => {
-            node.getTokens(req.query.code);
-            runningAuth = {};
-            res.sendStatus(200);
-        });
     }
     RED.nodes.registerType('OAuth2', OAuth2, {
         credentials: {
@@ -154,11 +148,19 @@ module.exports = function (RED) {
 
         let client_id = node.client_id;
 
+        runningAuth.node_id = req.params.id;
         runningAuth.callback_url = node.getCallbackUrl(req.query.protocol, req.query.hostname, req.query.port);
 
         const url = node.getAuthorizationUrl(req.query.protocol, req.query.hostname, req.query.port, client_id, runningAuth.callback_url);
         res.send({
             'url': url
         });
+    });
+
+    RED.httpAdmin.get('/oauth2/auth/callback', (req, res) => {
+        let node = RED.nodes.getNode(runningAuth.node_id);
+        node.getTokens(req.query.code);
+        runningAuth = {};
+        res.sendStatus(200);
     });
 }
