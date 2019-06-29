@@ -56,12 +56,8 @@ module.exports = function (RED) {
                 node.status({ fill: 'green', shape:'dot', text: 'authorized' });
 
                 node.tokens = { ...JSON.parse(body), timestamp: Date.now() };
-                
-                fs.writeFile(RED.settings.userDir + '/homeconnect_tokens.json', JSON.stringify(node.tokens), (err) => {
-                    if (err) {
-                        node.error(err);
-                    }
-                });
+
+                node.writeTokenFile();
 
                 node.send({
                     topic: 'oauth2',
@@ -86,12 +82,8 @@ module.exports = function (RED) {
                 node.status({ fill: 'green', shape:'dot', text: 'authorized' });
 
                 node.tokens = { ...JSON.parse(body), timestamp: Date.now() };
-                
-                fs.writeFile(RED.settings.userDir + '/homeconnect_tokens.json', JSON.stringify(node.tokens), (err) => {
-                    if (err) {
-                        node.error(err);
-                    }
-                });
+
+                node.writeTokenFile();
 
                 node.send({
                     topic: 'oauth2',
@@ -117,6 +109,14 @@ module.exports = function (RED) {
                 node.error(err);
             }
         };
+
+        node.writeTokenFile = () => {
+            fs.writeFile(RED.settings.userDir + '/homeconnect_tokens.json', JSON.stringify(node.tokens), (err) => {
+                if (err) {
+                    node.error(err);
+                }
+            });
+        }
 
         RED.events.on("nodes-started", () => {
             node.loadTokenFile();
