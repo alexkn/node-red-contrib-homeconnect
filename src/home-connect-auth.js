@@ -12,18 +12,17 @@ module.exports = function (RED) {
 
         this.context().flow.set('homeconnect_simulation', this.simulation_mode);
 
-        const auth = {
-            tokenHost: {
-                simulation: 'https://simulator.home-connect.com',
-                production: 'https://api.home-connect.com'
-            },
-            tokenPath: '/security/oauth/token',
-            authorizePath: '/security/oauth/authorize'
-        }
-
         this.status({ fill: 'red', shape: 'ring', text: 'unauthorized' });
 
         const node = this;
+
+        node.getHost = () => {
+            if(node.simulation_mode) {
+                return 'https://simulator.home-connect.com';
+            } else {
+                return 'https://api.home-connect.com';
+            }
+        }
 
         node.getAuthorizationUrl = (protocol, hostname, port, client_id) => {
             node.status({ fill: 'yellow', shape: 'ring', text: 'authorizing...' });
@@ -33,18 +32,15 @@ module.exports = function (RED) {
 
             node.context().set('callback_url', callbackUrl);
 
-            let tokenHost = node.context().flow.get('homeconnect_simulation') ? auth.tokenHost.simulation : auth.tokenHost.production;
-
-            return tokenHost + auth.authorizePath + 
+            return node.getHost() + '/security/oauth/authorize' + 
                 '?client_id=' + client_id + 
                 '&response_type=code&redirect_uri=' + callbackUrl;
         };
 
         node.getTokens = (authCode) => {
-            let tokenHost = node.context().flow.get('homeconnect_simulation') ? auth.tokenHost.simulation : auth.tokenHost.production;
             request.post({
                 headers: {'content-type' : 'application/x-www-form-urlencoded'},
-                url: tokenHost + auth.tokenPath,
+                url: node.getHost() + '/security/oauth/token',
                 body: 'client_id=' + node.client_id + 
                     '&client_secret=' + node.client_secret + 
                     '&grant_type=authorization_code&code=' + authCode +
@@ -77,10 +73,9 @@ module.exports = function (RED) {
         }
 
         node.refreshTokens = () => {
-            let tokenHost = node.context().flow.get('homeconnect_simulation') ? auth.tokenHost.simulation : auth.tokenHost.production;
             request.post({
                 headers: {'content-type' : 'application/x-www-form-urlencoded'},
-                url: tokenHost + auth.tokenPath,
+                url: node.getHost() + '/security/oauth/token',
                 body: 'grant_type=refresh_token&client_secret=' + node.client_secret + '&refresh_token=' + node.tokens.refresh_token
             }, (error, response, body) => {
                 if (error || response.statusCode != 200) {
