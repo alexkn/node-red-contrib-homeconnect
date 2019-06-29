@@ -60,7 +60,7 @@ module.exports = function (RED) {
 
                 node.tokens = { ...JSON.parse(body), timestamp: Date.now() };
                 
-                fs.writeFile('homeconnect_tokens.json', JSON.stringify(node.tokens), (err) => {
+                fs.writeFile(RED.settings.userDir + '/homeconnect_tokens.json', JSON.stringify(node.tokens), (err) => {
                     if (err) {
                         console.log(err);
                     }
@@ -90,7 +90,7 @@ module.exports = function (RED) {
 
                 node.tokens = { ...JSON.parse(body), timestamp: Date.now() };
                 
-                fs.writeFile('homeconnect_tokens.json', JSON.stringify(node.tokens), (err) => {
+                fs.writeFile(RED.settings.userDir + '/homeconnect_tokens.json', JSON.stringify(node.tokens), (err) => {
                     if (err) {
                         console.log(err);
                     }
@@ -107,12 +107,12 @@ module.exports = function (RED) {
 
         node.loadTokenFile = () => {
             try {
-            let content = fs.readFileSync('homeconnect_tokens.json', 'utf8');
-            node.tokens = JSON.parse(content);
+                let content = fs.readFileSync(RED.settings.userDir + '/homeconnect_tokens.json', 'utf8');
+                node.tokens = JSON.parse(content);
 
-            if (node.tokens != undefined) {
-                node.refreshTokens();
-            }
+                if (node.tokens != undefined) {
+                    node.refreshTokens();
+                }
             } catch (err) {
 
             }
