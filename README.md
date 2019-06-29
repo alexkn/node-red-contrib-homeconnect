@@ -1,28 +1,26 @@
 # node-red-contrib-homeconnect
 This nodes for Node-RED allow to control devices which are connected to the [Home Connect](https://www.home-connect.com) system.
 
-![node-red-contrib-homeconnect](https://user-images.githubusercontent.com/17932877/50652082-9ff1c600-0f85-11e9-990c-a0f13363afcd.jpg)
-
 ### Installation
 To use the HomeConnect nodes a Client ID and Client Secret are required. Those can be received from the home connect developer page:
 
 https://developer.home-connect.com/
 
 * After setting up an account, register a new application and select **Authorization Code Grant Flow** as the OAuth Flow.
-* Set the Redirect URI to `http://<ip-address>:<port>/oauth2/auth/callback`. Set the `ip-address` and `port` to match your Node-RED installation.
+* Set the Redirect URI to `http://<ip-address>:<port>/homeconnect/auth/callback`. Set the `ip-address` and `port` to match your Node-RED installation.
 
 To install HomeConnect nodes for Node-RED, run the following command inside your Node-RED folder:
 
 `npm install node-red-contrib-homeconnect`
 
 ### Available Nodes
-- [OAuth2](#oauth2)
-- [Request](#request)
+- [home-connect-auth](#home-connect-auth)
+- [home-connect-request](#home-connect-request)
 
-## OAuth2
-The OAuth2 node handles the authentication for the HomeConnect Developer API.
+## home-connect-auth
+The node handles the authentication for the HomeConnect Developer API.
 
-Once the node is set up and deployed, press the button to receive the required tokens. You will be forwared to the HomeConnect Developer Portal where you will be asked to sign in and provide the necessary access rights.
+Start the authorization from the properties dialog, but save and deploy your changes before finishing the authorization at Home Connect. 
 
 ### Node Properties
 
@@ -33,10 +31,10 @@ Once the node is set up and deployed, press the button to receive the required t
 | **Client Secret**  | Enter the Client Secret available on the HomeConnect Developer Portal |
 | **Use Simulation** | Wheter or not simulation or real appliances shall be used             |
 
-## Request
-The Request node requires an OAuth2 node as an input to recevice an access token.
+## home-connect-request
+The Request node requires an home-connect-auth node as an config node to recevice an access token.
 
-Additionally a second input triggers the request to the HomeConnect API.
+An input triggers the request to the HomeConnect API.
 
 ### Node Properties
 
