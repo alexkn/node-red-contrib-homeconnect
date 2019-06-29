@@ -113,8 +113,8 @@
         defaults: {
             auth: {value:"", type:"home-connect-auth", required: true},
             name: { value: '' },
-            tag: { value: 'default', required: true },
-            operationId: { value: '', required: true },
+            tag: { value: '' },
+            operationId: { value: '' },
             haid: { value: '' },
             body: { value: '' },
             optionkey: { value: '' },
@@ -134,9 +134,12 @@
             let checkForHAID = () => {
                 let tag = $('#node-input-tag').val();
                 let operationId = $('#node-input-operationId').val();
-                let item = data[tag][operationId];
+                let item = null;
+                try {
+                    item = data[tag][operationId];
+                } catch {}
 
-                if (!item || $.inArray('haid', item.scopes) == -1) {
+                if (item && $.inArray('haid', item.scopes) == -1) {
                     $('#node-input-haid').attr('disabled', true);
                 } else {
                     $('#node-input-haid').attr('disabled', false);
@@ -146,9 +149,12 @@
             let checkForBody = () => {
                 let tag = $('#node-input-tag').val();
                 let operationId = $('#node-input-operationId').val();
-                let item = data[tag][operationId];
+                let item = null;
+                try {
+                    item = data[tag][operationId];
+                } catch {}
 
-                if (!item || $.inArray('body', item.scopes) == -1) {
+                if (item && $.inArray('body', item.scopes) == -1) {
                     $('#node-input-body').attr('disabled', true);
                 } else {
                     $('#node-input-body').attr('disabled', false);
@@ -158,29 +164,32 @@
             let checkForKey = () => {
                 let tag = $('#node-input-tag').val();
                 let operationId = $('#node-input-operationId').val();
-                let item = data[tag][operationId];
+                let item = null;
+                try {
+                    item = data[tag][operationId];
+                } catch {}
 
-                if (!item || $.inArray('optionkey', item.scopes) == -1) {
+                if (item && $.inArray('optionkey', item.scopes) == -1) {
                     $('#node-input-optionkey').parent().css('display', 'none');
                 } else {
                     $('#node-input-optionkey').parent().css('display', 'block');
                 }
-                if (!item || $.inArray('programkey', item.scopes) == -1) {
+                if (item && $.inArray('programkey', item.scopes) == -1) {
                     $('#node-input-programkey').parent().css('display', 'none');
                 } else {
                     $('#node-input-programkey').parent().css('display', 'block');
                 }
-                if (!item || $.inArray('settingkey', item.scopes) == -1) {
+                if (item && $.inArray('settingkey', item.scopes) == -1) {
                     $('#node-input-settingkey').parent().css('display', 'none');
                 } else {
                     $('#node-input-settingkey').parent().css('display', 'block');
                 }
-                if (!item || $.inArray('statuskey', item.scopes) == -1) {
+                if (item && $.inArray('statuskey', item.scopes) == -1) {
                     $('#node-input-statuskey').parent().css('display', 'none');
                 } else {
                     $('#node-input-statuskey').parent().css('display', 'block');
                 }
-                if (!item || $.inArray('imagekey', item.scopes) == -1) {
+                if (item && $.inArray('imagekey', item.scopes) == -1) {
                     $('#node-input-imagekey').parent().css('display', 'none');
                 } else {
                     $('#node-input-imagekey').parent().css('display', 'block');
@@ -203,7 +212,7 @@
 
                     $('#node-input-operationId option').each((index, elem) => {
                         let program = $(elem).val();
-                        if(!program || items[program]) {
+                        if(items && (!program || items[program])) {
                             $(elem).show();
                         }else{
                             $(elem).hide();
@@ -240,6 +249,7 @@
     <div class="form-row">
         <label for="node-input-tag">Tag</label>
         <select name="node-input-tag" id="node-input-tag">
+            <option value=""></option>
             <option value="default">General</option>
             <option value="programs">Program</option>
             <option value="settings">Settings</option>

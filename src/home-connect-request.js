@@ -35,14 +35,16 @@ module.exports = function (RED) {
                 return;
             }
 
-            node.client.apis[node.tag][node.operationId]({
-                haid: node.haid,
-                body: node.body,
-                optionkey: node.optionkey,
-                programkey: node.programkey,
-                statuskey: node.statuskey,
-                imagekey: node.imagekey,
-                settingkey: node.settingkey
+            let tag = node.tag || msg.tag;
+            let operationId = node.operationId || msg.operationId
+            node.client.apis[tag][operationId]({
+                haid: node.haid || msg.haid,
+                body: node.body || msg.body,
+                optionkey: node.optionkey || msg.optionkey,
+                programkey: node.programkey || msg.programkey,
+                statuskey: node.statuskey || msg.statuskey,
+                imagekey: node.imagekey || msg.imagekey,
+                settingkey: node.settingkey || msg.settingkey
             })
             .then(response => {
                 let res = response.data;
@@ -50,6 +52,8 @@ module.exports = function (RED) {
                     res = JSON.parse(res);
                 } catch (error) {}
                 node.send({
+                    status: response.status,
+                    statusText: response.statusText,
                     payload: res
                 });
             })
