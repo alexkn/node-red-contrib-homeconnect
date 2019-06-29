@@ -1,5 +1,5 @@
 <script type="text/javascript">
-    RED.nodes.registerType('OAuth2', {
+    RED.nodes.registerType('home-connect-auth', {
         category: 'config',
         defaults: {
             name: { value: '' },
@@ -10,7 +10,7 @@
             client_secret: { type: 'text', required: true }
         },
         label: function () {
-            return this.name || 'oauth2';
+            return this.name || 'home-connect-auth';
         },
         color: '#2392d8',
         icon: 'bridge.png',
@@ -38,7 +38,7 @@
         }
     });
 </script>
-<script type="text/x-red" data-template-name="OAuth2">
+<script type="text/x-red" data-template-name="home-connect-auth">
     <div class="form-row">
         <label for="node-config-input-name"><i class="icon-tag"></i> Name</label>
         <input type="text" id="node-config-input-name">

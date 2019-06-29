@@ -1,7 +1,7 @@
 module.exports = function (RED) {
     const SwaggerClient = require('swagger-client');
 
-    function Request(config) {
+    function HomeConnectRequest(config) {
         RED.nodes.createNode(this, config);
 
         this.auth = RED.nodes.getNode(config.auth);
@@ -79,5 +79,5 @@ module.exports = function (RED) {
             }
         };
     }
-    RED.nodes.registerType('Request', Request);
+    RED.nodes.registerType('home-connect-request', HomeConnectRequest);
 };

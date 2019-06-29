@@ -108,10 +108,10 @@
         }
     };
 
-    RED.nodes.registerType('Request', {
+    RED.nodes.registerType('home-connect-request', {
         category: 'HomeConnect',
         defaults: {
-            auth: {value:"", type:"OAuth2"},
+            auth: {value:"", type:"home-connect-auth", required: true},
             name: { value: '' },
             tag: { value: 'default', required: true },
             operationId: { value: '', required: true },
@@ -126,7 +126,7 @@
         inputs: 1,
         outputs: 1,
         label: function () {
-            return this.name || this.operationId || 'request';
+            return this.name || this.operationId || 'home-connect-request';
         },
         color: '#2392d8',
         icon: 'bridge.png',
@@ -216,7 +216,7 @@
         }
     });
 </script>
-<script type="text/x-red" data-template-name="Request">
+<script type="text/x-red" data-template-name="home-connect-request">
     <div class="form-row">
         <label for="node-input-auth"><i class="icon-tag"></i> Auth</label>
         <select id="node-input-auth"></select>

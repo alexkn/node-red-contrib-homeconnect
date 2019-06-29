@@ -2,7 +2,7 @@ module.exports = function (RED) {
     const request = require('request');
     const fs = require('fs');
 
-    function OAuth2(config) {
+    function HomeConnectAuth(config) {
         RED.nodes.createNode(this, config);
 
         this.name = config.name;
@@ -61,7 +61,7 @@ module.exports = function (RED) {
             node.loadTokenFile();
         });
     }
-    RED.nodes.registerType('OAuth2', OAuth2, {
+    RED.nodes.registerType('home-connect-auth', HomeConnectAuth, {
         credentials: {
             client_id: { type: 'text' },
             client_secret: { type: 'text' }
