@@ -17,11 +17,7 @@ module.exports = function (RED) {
         const node = this;
 
         node.getHost = () => {
-            if(node.simulation_mode) {
-                return 'https://simulator.home-connect.com';
-            } else {
-                return 'https://api.home-connect.com';
-            }
+            return getHost(node.simulation_mode);
         }
 
         node.getAuthorizationUrl = (protocol, hostname, port, client_id) => {
@@ -121,7 +117,7 @@ module.exports = function (RED) {
         RED.events.on("nodes-started", () => {
             node.loadTokenFile();
         });
-
+        
         RED.httpAdmin.get('/oauth2/auth/callback', (req, res) => {
             node.getTokens(req.query.code);
             res.sendStatus(200);
@@ -133,6 +129,14 @@ module.exports = function (RED) {
             client_secret: { type: 'text' }
         }
     });
+
+    let getHost = (simulation_mode) => {
+        if(simulation_mode) {
+            return 'https://simulator.home-connect.com';
+        } else {
+            return 'https://api.home-connect.com';
+        }
+    }
 
     RED.httpAdmin.get('/oauth2/:id/auth/url', (req, res) => {
         if (!req.query.protocol || !req.query.hostname) {
