@@ -92,16 +92,10 @@ module.exports = function (RED) {
     let runningAuth = null;
 
     RED.httpAdmin.get('/homeconnect/auth/start', (req, res) => {
-        let node = RED.nodes.getNode(req.query.node_id);
-        if (!node) {
-            res.sendStatus(404);
-            return;
-        }
-
         runningAuth = {
             node_id: req.query.node_id,
-            client_id: node.client_id,
-            client_secret: node.client_secret,
+            client_id: req.query.client_id,
+            client_secret: req.query.client_secret,
             callback_url: req.protocol + '://' + req.get('host') + '/homeconnect/auth/callback',
             simulation_mode: (req.query.simulation_mode == 'true')
         };

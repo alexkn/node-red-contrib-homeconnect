@@ -16,15 +16,27 @@
         },
         color: '#2392d8',
         icon: 'bridge.png',
-        button: {
-            onclick: function() {
+        oneditprepare: function() {
+            var node = this;
+            
+            $('#node-button-start-auth').click(function() {
+                let client_id = $('#node-input-client_id').val();
+                let client_secret = $('#node-input-client_secret').val();
+                let simulation_mode = $('#node-input-simulation_mode').prop('checked');
+
                 $.getJSON('homeconnect/auth/start', {
-                    node_id: this.id,
-                    simulation_mode: this.simulation_mode
+                    node_id: node.id,
+                    client_id: client_id,
+                    client_secret: client_secret,
+                    simulation_mode: simulation_mode
                 }, function(response) {
                     window.open(response.url);
                 });
-            }
+            });
+
+            $('#node-input-client_id,#node-input-client_secret').change(function() {
+                $('#node-button-start-auth').prop('disabled', !$('#node-input-client_id').val() || !$('#node-input-client_secret').val());
+            });
         }
     });
 </script>
@@ -44,5 +56,11 @@
     <div class="form-row">
         <label for="node-input-simulation_mode">Use Simulation</label>
         <input type="checkbox" id="node-input-simulation_mode">
+    </div>
+    <div class="form-row">
+        <button class="btn" id="node-button-start-auth">Start authorization</button>        
+    </div>
+    <div class="form-row">
+        <span>Start the authorization, but save and deploy your changes before finishing the authorization at Home Connect.</span>
     </div>
 </script>
