@@ -57,8 +57,14 @@ module.exports = function (RED) {
             }
         };
 
-        RED.events.on("nodes-started", () => {
+        let nodeStarted = () => {
             node.loadTokenFile();
+        };
+
+        RED.events.on("nodes-started", nodeStarted);
+
+        node.on('close', () => {
+            RED.events.off("nodes-started", nodeStarted);
         });
     }
     RED.nodes.registerType('home-connect-auth', HomeConnectAuth, {
