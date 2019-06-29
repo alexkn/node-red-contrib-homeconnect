@@ -4,6 +4,7 @@ module.exports = function (RED) {
     function Request(config) {
         RED.nodes.createNode(this, config);
 
+        this.auth = RED.nodes.getNode(config.auth);
         this.name = config.name;
         this.tag = config.tag;
         this.operationId = config.operationId;
@@ -20,48 +21,52 @@ module.exports = function (RED) {
             production: 'https://apiclient.home-connect.com/hcsdk-production.yaml'
         }
 
-        this.status({ fill: 'red', shape: 'ring', text: 'wait for client' });
+        this.status({ fill: 'red', shape: 'ring', text: 'not connected' });
 
         const node = this;
 
+        node.auth.on('home-connect-auth', () => {
+            node.getSwaggerClient();
+        });
+
         node.on('input', msg => {
-            if (msg.topic === 'oauth2') {
-                node.context().set('access_token', msg.payload.access_token);
-                node.getSwaggerClient();
-            } else {
-                node.client.apis[node.tag][node.operationId]({
-                    haid: node.haid,
-                    body: node.body,
-                    optionkey: node.optionkey,
-                    programkey: node.programkey,
-                    statuskey: node.statuskey,
-                    imagekey: node.imagekey,
-                    settingkey: node.settingkey
-                })
-                .then(response => {
-                    let res = response.data;
-                    try {
-                        res = JSON.parse(res);
-                    } catch (error) {}
-                    node.send({
-                        payload: res
-                    });
-                })
-                .catch(error => {
-                    node.send({
-                        error: error
-                    });
-                });
+            if(!node.client) {
+                node.error('auth not ready');
+                return;
             }
+
+            node.client.apis[node.tag][node.operationId]({
+                haid: node.haid,
+                body: node.body,
+                optionkey: node.optionkey,
+                programkey: node.programkey,
+                statuskey: node.statuskey,
+                imagekey: node.imagekey,
+                settingkey: node.settingkey
+            })
+            .then(response => {
+                let res = response.data;
+                try {
+                    res = JSON.parse(res);
+                } catch (error) {}
+                node.send({
+                    payload: res
+                });
+            })
+            .catch(error => {
+                node.send({
+                    error: error
+                });
+            });
         });
 
         node.getSwaggerClient = () => {
-            if (node.context().get('access_token') != undefined) {
+            if (node.auth.access_token != undefined) {
                 SwaggerClient({
-                    url: node.context().flow.get('homeconnect_simulation') ? urls.simulation : urls.production,
+                    url: node.auth.simulation_mode ? urls.simulation : urls.production,
                     requestInterceptor: req => {
                         req.headers['accept'] = 'application/vnd.bsh.sdk.v1+json, image/jpeg',
-                        req.headers['authorization'] = 'Bearer ' + node.context().get('access_token')
+                        req.headers['authorization'] = 'Bearer ' + node.auth.access_token
                     }
                 })
                 .then(client => {

@@ -111,6 +111,7 @@
     RED.nodes.registerType('Request', {
         category: 'HomeConnect',
         defaults: {
+            auth: {value:"", type:"OAuth2"},
             name: { value: '' },
             tag: { value: 'default', required: true },
             operationId: { value: '', required: true },
@@ -216,6 +217,10 @@
     });
 </script>
 <script type="text/x-red" data-template-name="Request">
+    <div class="form-row">
+        <label for="node-input-auth"><i class="icon-tag"></i> Auth</label>
+        <select id="node-input-auth"></select>
+    </div>
     <div class="form-row">
         <label for="node-input-name"><i class="icon-tag"></i> Name</label>
         <input type="text" id="node-input-name">

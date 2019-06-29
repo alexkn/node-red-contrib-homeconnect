@@ -9,10 +9,7 @@ module.exports = function (RED) {
         this.simulation_mode = config.simulation_mode;
         this.client_id = this.credentials.client_id;
         this.client_secret = this.credentials.client_secret;
-
-        this.context().flow.set('homeconnect_simulation', this.simulation_mode);
-
-        this.status({ fill: 'red', shape: 'ring', text: 'unauthorized' });
+        this.access_token = null;
 
         const node = this;
 
@@ -31,8 +28,6 @@ module.exports = function (RED) {
                     return;
                 }
 
-                node.status({ fill: 'green', shape:'dot', text: 'authorized' });
-
                 node.tokens = { ...JSON.parse(body), timestamp: Date.now() };
 
                 writeTokenFile(node.tokens, (err) => {
@@ -41,12 +36,8 @@ module.exports = function (RED) {
                     }
                 });
 
-                node.send({
-                    topic: 'oauth2',
-                    payload: {
-                        access_token: node.tokens.access_token
-                    }
-                });
+                node.access_token = node.tokens.access_token;
+                node.emit('home-connect-auth');
             });
         };
 
@@ -128,11 +119,8 @@ module.exports = function (RED) {
 
             if (error || response.statusCode != 200) {
                 node.error('getTokens failed: ' + body);
-                node.status({ fill: 'red', shape:'dot', text: 'getTokens failed' });
                 return;
             }
-
-            node.status({ fill: 'green', shape:'dot', text: 'authorized' });
 
             node.tokens = { ...JSON.parse(body), timestamp: Date.now() };
 
@@ -142,12 +130,8 @@ module.exports = function (RED) {
                 }
             });
 
-            node.send({
-                topic: 'oauth2',
-                payload: {
-                    access_token: node.tokens.access_token
-                }
-            });
+            node.access_token = node.tokens.access_token;
+            node.emit('home-connect-auth');
         });
 
         runningAuth = null;

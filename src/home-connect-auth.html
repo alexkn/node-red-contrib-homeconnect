@@ -1,12 +1,10 @@
 <script type="text/javascript">
     RED.nodes.registerType('OAuth2', {
-        category: 'HomeConnect',
+        category: 'config',
         defaults: {
             name: { value: '' },
             simulation_mode: { value: false }
         },
-        inputs: 0,
-        outputs: 1,
         credentials: {
             client_id: { type: 'text', required: true },
             client_secret: { type: 'text', required: true }
@@ -19,10 +17,10 @@
         oneditprepare: function() {
             var node = this;
             
-            $('#node-button-start-auth').click(function() {
-                let client_id = $('#node-input-client_id').val();
-                let client_secret = $('#node-input-client_secret').val();
-                let simulation_mode = $('#node-input-simulation_mode').prop('checked');
+            $('#node-config-button-start-auth').click(function() {
+                let client_id = $('#node-config-input-client_id').val();
+                let client_secret = $('#node-config-input-client_secret').val();
+                let simulation_mode = $('#node-config-input-simulation_mode').prop('checked');
 
                 $.getJSON('homeconnect/auth/start', {
                     node_id: node.id,
@@ -34,31 +32,31 @@
                 });
             });
 
-            $('#node-input-client_id,#node-input-client_secret').change(function() {
-                $('#node-button-start-auth').prop('disabled', !$('#node-input-client_id').val() || !$('#node-input-client_secret').val());
+            $('#node-config-input-client_id,#node-config-input-client_secret').change(function() {
+                $('#node-config-button-start-auth').prop('disabled', !$('#node-config-input-client_id').val() || !$('#node-config-input-client_secret').val());
             });
         }
     });
 </script>
 <script type="text/x-red" data-template-name="OAuth2">
     <div class="form-row">
-        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
-        <input type="text" id="node-input-name">
+        <label for="node-config-input-name"><i class="icon-tag"></i> Name</label>
+        <input type="text" id="node-config-input-name">
     </div>
     <div class="form-row">
-        <label for="node-input-client_id">Client ID</label>
-        <input type="text" id="node-input-client_id">
+        <label for="node-config-input-client_id">Client ID</label>
+        <input type="text" id="node-config-input-client_id">
     </div>
     <div class="form-row">
-        <label for="node-input-client_secret">Client Secret</label>
-        <input type="text" id="node-input-client_secret">
+        <label for="node-config-input-client_secret">Client Secret</label>
+        <input type="text" id="node-config-input-client_secret">
     </div>
     <div class="form-row">
-        <label for="node-input-simulation_mode">Use Simulation</label>
-        <input type="checkbox" id="node-input-simulation_mode">
+        <label for="node-config-input-simulation_mode">Use Simulation</label>
+        <input type="checkbox" id="node-config-input-simulation_mode">
     </div>
     <div class="form-row">
-        <button class="btn" id="node-button-start-auth">Start authorization</button>        
+        <button class="btn" id="node-config-button-start-auth">Start authorization</button>
     </div>
     <div class="form-row">
         <span>Start the authorization, but save and deploy your changes before finishing the authorization at Home Connect.</span>
