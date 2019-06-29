@@ -136,7 +136,7 @@
                 let operationId = $('#node-input-operationId').val();
                 let item = data[tag][operationId];
 
-                if ($.inArray('haid', item.scopes) == -1) {
+                if (!item || $.inArray('haid', item.scopes) == -1) {
                     $('#node-input-haid').attr('disabled', true);
                 } else {
                     $('#node-input-haid').attr('disabled', false);
@@ -148,70 +148,73 @@
                 let operationId = $('#node-input-operationId').val();
                 let item = data[tag][operationId];
 
-                if ($.inArray('body', item.scopes) == -1) {
+                if (!item || $.inArray('body', item.scopes) == -1) {
                     $('#node-input-body').attr('disabled', true);
                 } else {
                     $('#node-input-body').attr('disabled', false);
                 }
             };
 
-            let checkForOptionKey = () => {
+            let checkForKey = () => {
                 let tag = $('#node-input-tag').val();
                 let operationId = $('#node-input-operationId').val();
                 let item = data[tag][operationId];
 
-                if ($.inArray('optionkey', item.scopes) == -1) {
-                    $('#node-input-optionkey').css('display', 'none');
+                if (!item || $.inArray('optionkey', item.scopes) == -1) {
+                    $('#node-input-optionkey').parent().css('display', 'none');
                 } else {
-                    $('#node-input-optionkey').css('display', 'block');
+                    $('#node-input-optionkey').parent().css('display', 'block');
                 }
-                if ($.inArray('programkey', item.scopes) == -1) {
-                    $('#node-input-programkey').css('display', 'none');
+                if (!item || $.inArray('programkey', item.scopes) == -1) {
+                    $('#node-input-programkey').parent().css('display', 'none');
                 } else {
-                    $('#node-input-programkey').css('display', 'block');
+                    $('#node-input-programkey').parent().css('display', 'block');
                 }
-                if ($.inArray('settingkey', item.scopes) == -1) {
-                    $('#node-input-settingkey').css('display', 'none');
+                if (!item || $.inArray('settingkey', item.scopes) == -1) {
+                    $('#node-input-settingkey').parent().css('display', 'none');
                 } else {
-                    $('#node-input-settingkey').css('display', 'block');
+                    $('#node-input-settingkey').parent().css('display', 'block');
                 }
-                if ($.inArray('statuskey', item.scopes) == -1) {
-                    $('#node-input-statuskey').css('display', 'none');
+                if (!item || $.inArray('statuskey', item.scopes) == -1) {
+                    $('#node-input-statuskey').parent().css('display', 'none');
                 } else {
-                    $('#node-input-statuskey').css('display', 'block');
+                    $('#node-input-statuskey').parent().css('display', 'block');
                 }
-                if ($.inArray('imagekey', item.scopes) == -1) {
-                    $('#node-input-imagekey').css('display', 'none');
+                if (!item || $.inArray('imagekey', item.scopes) == -1) {
+                    $('#node-input-imagekey').parent().css('display', 'none');
                 } else {
-                    $('#node-input-imagekey').css('display', 'block');
+                    $('#node-input-imagekey').parent().css('display', 'block');
                 }
             };
-            
+
             $('#node-input-tag')
             .change(function () {
                 let tag = $('#node-input-tag').val();
                 
                 if (tag != undefined) {
                     let items = data[tag];
-                    $('#node-input-operationId').empty();
-                    $.each(items, function (key, item) {
-                        $('#node-input-operationId').append($('<option>', {
-                            value: key,
-                            text : item.text
-                        }));
+
+                    $('#node-input-operationId option').each((index, elem) => {
+                        let program = $(elem).val();
+                        if(!program || items[program]) {
+                            $(elem).show();
+                        }else{
+                            $(elem).hide();
+                            $(elem).prop("selected", false);
+                        }
                     });
                 }
 
                 checkForHAID();
                 checkForBody();
-                checkForOptionKey();
+                checkForKey();
             });
 
             $('#node-input-operationId')
             .change(function () {
                 checkForHAID();
                 checkForBody();
-                checkForOptionKey();
+                checkForKey();
             });
         }
     });
@@ -238,6 +241,31 @@
     <div class="form-row">
         <label for="node-input-operationId">Action</label>
         <select name="node-input-operationId" id="node-input-operationId">
+            <option value=""></option>
+            <option value="get_home_appliances">get_home_appliances</option>
+            <option value="get_specific_appliance">get_specific_appliance</option>
+            <option value="get_active_program">get_active_program</option>
+            <option value="start_program">start_program</option>
+            <option value="stop_program">stop_program</option>
+            <option value="get_active_program_options">get_active_program_options</option>
+            <option value="set_active_program_options">set_active_program_options</option>
+            <option value="get_active_program_option">get_active_program_option</option>
+            <option value="set_active_program_option">set_active_program_option</option>
+            <option value="get_selected_program">get_selected_program</option>
+            <option value="set_selected_program">set_selected_program</option>
+            <option value="get_selected_program_options">get_selected_program_options</option>
+            <option value="set_selected_program_options">set_selected_program_options</option>
+            <option value="get_selected_program_option">get_selected_program_option</option>
+            <option value="set_selected_program_option">set_selected_program_option</option>
+            <option value="get_available_programs">get_available_programs</option>
+            <option value="get_available_program">get_available_program</option>
+            <option value="get_settings">get_settings</option>
+            <option value="get_setting">get_setting</option>
+            <option value="set_setting">set_setting</option>
+            <option value="get_status">get_status</option>
+            <option value="get_status_value">get_status_value</option>
+            <option value="get_images">get_images</option>
+            <option value="get_image">get_image</option>
         </select>
     </div>
     <div class="form-row">
@@ -247,9 +275,21 @@
     <div class="form-row">
         <label for="node-input-optionkey">Option Key</label>
         <input type="text" id="node-input-optionkey">
+    </div>
+    <div class="form-row">
+        <label for="node-input-programkey">Program Key</label>
         <input type="text" id="node-input-programkey">
+    </div>
+    <div class="form-row">
+        <label for="node-input-programkey">Status Key</label>
         <input type="text" id="node-input-statuskey">
+    </div>
+    <div class="form-row">
+        <label for="node-input-programkey">Image Key</label>
         <input type="text" id="node-input-imagekey">
+    </div>
+    <div class="form-row">
+        <label for="node-input-programkey">Setting Key</label>
         <input type="text" id="node-input-settingkey">
     </div>
     <div class=""form-row>
