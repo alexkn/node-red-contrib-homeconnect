@@ -18,18 +18,9 @@
         icon: 'bridge.png',
         button: {
             onclick: function() {
-                let currentUri = window.location;
-                let port;
-                if (currentUri.protocol === 'https:' && currentUri.port && currentUri.port !== 443) {
-                    port = currentUri.port;
-                } else if (currentUri.protocol === 'http:' && currentUri.port && currentUri.port !== 80) {
-                    port = currentUri.port;
-                }
-
-                $.getJSON('oauth2/' + this.id + '/auth/url', {
-                    protocol: currentUri.protocol,
-                    hostname: currentUri.hostname,
-                    port: port
+                $.getJSON('homeconnect/auth/start', {
+                    node_id: this.id,
+                    simulation_mode: this.simulation_mode
                 }, function(response) {
                     window.open(response.url);
                 });

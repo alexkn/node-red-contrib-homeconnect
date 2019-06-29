@@ -89,39 +89,45 @@ module.exports = function (RED) {
         fs.writeFile(RED.settings.userDir + '/homeconnect_tokens.json', JSON.stringify(tokens), callback);
     }
 
-    let runningAuth = {};
+    let runningAuth = null;
 
-    RED.httpAdmin.get('/oauth2/:id/auth/url', (req, res) => {
-        if (!req.query.protocol || !req.query.hostname) {
-            res.sendStatus(400);
-            return;
-        }
-
-        let node = RED.nodes.getNode(req.params.id);
+    RED.httpAdmin.get('/homeconnect/auth/start', (req, res) => {
+        let node = RED.nodes.getNode(req.query.node_id);
         if (!node) {
             res.sendStatus(404);
             return;
         }
 
-        runningAuth.node_id = req.params.id;
-        runningAuth.callback_url = req.query.protocol + '//' + req.query.hostname + (req.query.port ? ':' + req.query.port : '') + '/oauth2/auth/callback';
-        const url = getHost(node.simulation_mode) + '/security/oauth/authorize' + '?client_id=' + node.client_id + '&response_type=code&redirect_uri=' + runningAuth.callback_url;
+        runningAuth = {
+            node_id: req.query.node_id,
+            client_id: node.client_id,
+            client_secret: node.client_secret,
+            callback_url: req.protocol + '://' + req.get('host') + '/homeconnect/auth/callback',
+            simulation_mode: (req.query.simulation_mode == 'true')
+        };
+
+        const url = getHost(runningAuth.simulation_mode) + '/security/oauth/authorize' + '?client_id=' + runningAuth.client_id + '&response_type=code&redirect_uri=' + runningAuth.callback_url;
 
         res.send({
             'url': url
         });
     });
 
-    RED.httpAdmin.get('/oauth2/auth/callback', (req, res) => {
+    RED.httpAdmin.get('/homeconnect/auth/callback', (req, res) => {
+        if (!runningAuth) {
+            res.sendStatus(400);
+            return;
+        }
+
         let node = RED.nodes.getNode(runningAuth.node_id);
 
         let authCode = req.query.code;
 
         request.post({
             headers: {'content-type' : 'application/x-www-form-urlencoded'},
-            url: node.getHost() + '/security/oauth/token',
-            body: 'client_id=' + node.client_id + 
-                '&client_secret=' + node.client_secret + 
+            url: getHost(runningAuth.simulation_mode) + '/security/oauth/token',
+            body: 'client_id=' + runningAuth.client_id + 
+                '&client_secret=' + runningAuth.client_secret + 
                 '&grant_type=authorization_code&code=' + authCode +
                 '&redirect_uri=' + runningAuth.callback_url
         }, (error, response, body) => {
@@ -150,7 +156,7 @@ module.exports = function (RED) {
             });
         });
 
-        runningAuth = {};
+        runningAuth = null;
         res.sendStatus(200);
     });
 }
