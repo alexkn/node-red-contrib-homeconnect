@@ -20,37 +20,6 @@ module.exports = function (RED) {
             return getHost(node.simulation_mode);
         }
 
-        node.getTokens = (authCode) => {
-            request.post({
-                headers: {'content-type' : 'application/x-www-form-urlencoded'},
-                url: node.getHost() + '/security/oauth/token',
-                body: 'client_id=' + node.client_id + 
-                    '&client_secret=' + node.client_secret + 
-                    '&grant_type=authorization_code&code=' + authCode +
-                    '&redirect_uri=' + runningAuth.callback_url
-            }, (error, response, body) => {
-
-                if (error || response.statusCode != 200) {
-                    node.error('getTokens failed: ' + body);
-                    node.status({ fill: 'red', shape:'dot', text: 'getTokens failed' });
-                    return;
-                }
-
-                node.status({ fill: 'green', shape:'dot', text: 'authorized' });
-
-                node.tokens = { ...JSON.parse(body), timestamp: Date.now() };
-
-                node.writeTokenFile();
-
-                node.send({
-                    topic: 'oauth2',
-                    payload: {
-                        access_token: node.tokens.access_token
-                    }
-                });
-            });
-        }
-
         node.refreshTokens = () => {
             request.post({
                 headers: {'content-type' : 'application/x-www-form-urlencoded'},
@@ -66,7 +35,11 @@ module.exports = function (RED) {
 
                 node.tokens = { ...JSON.parse(body), timestamp: Date.now() };
 
-                node.writeTokenFile();
+                writeTokenFile(node.tokens, (err) => {
+                    if (err) {
+                        node.error(err);
+                    }
+                });
 
                 node.send({
                     topic: 'oauth2',
@@ -93,14 +66,6 @@ module.exports = function (RED) {
             }
         };
 
-        node.writeTokenFile = () => {
-            fs.writeFile(RED.settings.userDir + '/homeconnect_tokens.json', JSON.stringify(node.tokens), (err) => {
-                if (err) {
-                    node.error(err);
-                }
-            });
-        }
-
         RED.events.on("nodes-started", () => {
             node.loadTokenFile();
         });
@@ -118,6 +83,10 @@ module.exports = function (RED) {
         } else {
             return 'https://api.home-connect.com';
         }
+    }
+
+    let writeTokenFile = (tokens, callback) => {
+        fs.writeFile(RED.settings.userDir + '/homeconnect_tokens.json', JSON.stringify(tokens), callback);
     }
 
     let runningAuth = {};
@@ -145,7 +114,42 @@ module.exports = function (RED) {
 
     RED.httpAdmin.get('/oauth2/auth/callback', (req, res) => {
         let node = RED.nodes.getNode(runningAuth.node_id);
-        node.getTokens(req.query.code);
+
+        let authCode = req.query.code;
+
+        request.post({
+            headers: {'content-type' : 'application/x-www-form-urlencoded'},
+            url: node.getHost() + '/security/oauth/token',
+            body: 'client_id=' + node.client_id + 
+                '&client_secret=' + node.client_secret + 
+                '&grant_type=authorization_code&code=' + authCode +
+                '&redirect_uri=' + runningAuth.callback_url
+        }, (error, response, body) => {
+
+            if (error || response.statusCode != 200) {
+                node.error('getTokens failed: ' + body);
+                node.status({ fill: 'red', shape:'dot', text: 'getTokens failed' });
+                return;
+            }
+
+            node.status({ fill: 'green', shape:'dot', text: 'authorized' });
+
+            node.tokens = { ...JSON.parse(body), timestamp: Date.now() };
+
+            writeTokenFile(node.tokens, (err) => {
+                if (err) {
+                    node.error(err);
+                }
+            });
+
+            node.send({
+                topic: 'oauth2',
+                payload: {
+                    access_token: node.tokens.access_token
+                }
+            });
+        });
+
         runningAuth = {};
         res.sendStatus(200);
     });
