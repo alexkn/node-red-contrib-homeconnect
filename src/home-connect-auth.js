@@ -20,18 +20,6 @@ module.exports = function (RED) {
             return getHost(node.simulation_mode);
         }
 
-        node.getCallbackUrl = (protocol, hostname, port) => {
-            return protocol + '//' + hostname + (port ? ':' + port : '') + '/oauth2/auth/callback';
-        }
-
-        node.getAuthorizationUrl = (protocol, hostname, port, client_id, callback_url) => {
-            node.status({ fill: 'yellow', shape: 'ring', text: 'authorizing...' });
-
-            return node.getHost() + '/security/oauth/authorize' + 
-                '?client_id=' + client_id + 
-                '&response_type=code&redirect_uri=' + callback_url;
-        };
-
         node.getTokens = (authCode) => {
             request.post({
                 headers: {'content-type' : 'application/x-www-form-urlencoded'},
@@ -146,12 +134,10 @@ module.exports = function (RED) {
             return;
         }
 
-        let client_id = node.client_id;
-
         runningAuth.node_id = req.params.id;
-        runningAuth.callback_url = node.getCallbackUrl(req.query.protocol, req.query.hostname, req.query.port);
+        runningAuth.callback_url = req.query.protocol + '//' + req.query.hostname + (req.query.port ? ':' + req.query.port : '') + '/oauth2/auth/callback';
+        const url = getHost(node.simulation_mode) + '/security/oauth/authorize' + '?client_id=' + node.client_id + '&response_type=code&redirect_uri=' + runningAuth.callback_url;
 
-        const url = node.getAuthorizationUrl(req.query.protocol, req.query.hostname, req.query.port, client_id, runningAuth.callback_url);
         res.send({
             'url': url
         });
