@@ -1,9 +1,23 @@
 {
   "name": "node-red-contrib-homeconnect",
-  "version": "0.1.4",
-  "repository": "https://github.com/pckhib/node-red-contrib-homeconnect.git",
-  "author": "Patrick Hieber <patrickhieber92@gmail.com>",
+  "version": "0.2.0",
+  "description": "Node-RED-nodes for Home Connect",
+  "author": "Alexander Knöbel <alex-git@knoebel.info>",
+  "contributors": [
+    "Patrick Hieber <patrickhieber92@gmail.com>"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/alexkn/node-red-contrib-homeconnect.git"
+  },
+  "bugs": {
+    "url": "https://github.com/alexkn/node-red-contrib-homeconnect/issues"
+  },
+  "homepage": "https://github.com/alexkn/node-red-contrib-homeconnect",
   "license": "MIT",
+  "keywords": [
+    "node-red"
+  ],
   "node-red": {
     "nodes": {
       "home-connect-auth": "src/home-connect-auth.js",
