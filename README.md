@@ -11,7 +11,7 @@ https://developer.home-connect.com/
 
 To install HomeConnect nodes for Node-RED, run the following command inside your Node-RED folder:
 
-`npm install node-red-contrib-homeconnect`
+`npm install alexkn/node-red-contrib-homeconnect`
 
 ### Available Nodes
 - [home-connect-auth](#home-connect-auth)
