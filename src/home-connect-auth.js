@@ -18,10 +18,17 @@ module.exports = function (RED) {
         }
 
         node.refreshTokens = () => {
+            // The Simulator currently expects the client_id
+            // TODO: remove when fixed
+            let body = 'grant_type=refresh_token&client_secret=' + node.client_secret + '&refresh_token=' + node.tokens.refresh_token
+            if(node.simulation_mode) {
+                body = body + '&client_id=' + node.client_id 
+            }
+            
             request.post({
                 headers: {'content-type' : 'application/x-www-form-urlencoded'},
                 url: node.getHost() + '/security/oauth/token',
-                body: 'grant_type=refresh_token&client_secret=' + node.client_secret + '&refresh_token=' + node.tokens.refresh_token
+                body: body
             }, (error, response, body) => {
                 if (error || response.statusCode != 200) {
                     node.error('refreshTokens failed: ' + body);
