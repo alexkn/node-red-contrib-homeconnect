@@ -30,7 +30,7 @@ module.exports = function (RED) {
 
                 node.tokens = { ...JSON.parse(body), timestamp: Date.now() };
 
-                writeTokenFile(node.tokens, (err) => {
+                writeTokenFile(node.id, node.tokens, (err) => {
                     if (err) {
                         node.error(err);
                     }
@@ -46,8 +46,14 @@ module.exports = function (RED) {
                 let path = RED.settings.userDir + '/homeconnect_tokens.json';
                 if (fs.existsSync(path)) {
                     let content = fs.readFileSync(path, 'utf8');
-                    node.tokens = JSON.parse(content);
-    
+                    let tokens = JSON.parse(content);
+
+                    if(tokens.refresh_token) {
+                        node.tokens = tokens;
+                    } else if (tokens[node.id].refresh_token) {
+                        node.tokens = tokens[node.id];
+                    }
+
                     if (node.tokens != undefined) {
                         node.refreshTokens();
                     }
@@ -82,8 +88,10 @@ module.exports = function (RED) {
         }
     }
 
-    let writeTokenFile = (tokens, callback) => {
-        fs.writeFile(RED.settings.userDir + '/homeconnect_tokens.json', JSON.stringify(tokens), callback);
+    let writeTokenFile = (nodeId, tokens, callback) => {
+        alltokens = {};
+        alltokens[nodeId] = tokens;
+        fs.writeFile(RED.settings.userDir + '/homeconnect_tokens.json', JSON.stringify(alltokens), callback);
     }
 
     let runningAuth = null;
@@ -110,7 +118,8 @@ module.exports = function (RED) {
             return;
         }
 
-        let node = RED.nodes.getNode(runningAuth.node_id);
+        let nodeId = runningAuth.node_id;
+        let node = RED.nodes.getNode(nodeId);
 
         let authCode = req.query.code;
 
@@ -130,7 +139,7 @@ module.exports = function (RED) {
 
             node.tokens = { ...JSON.parse(body), timestamp: Date.now() };
 
-            writeTokenFile(node.tokens, (err) => {
+            writeTokenFile(nodeId, node.tokens, (err) => {
                 if (err) {
                     node.error(err);
                 }
