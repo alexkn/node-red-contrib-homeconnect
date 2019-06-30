@@ -48,7 +48,7 @@ module.exports = function (RED) {
                 if(tokens) {
                     if(tokens.refresh_token) {
                         node.tokens = tokens;
-                    } else if (tokens[node.id].refresh_token) {
+                    } else if (tokens[node.id]) {
                         node.tokens = tokens[node.id];
                     }
 
@@ -98,7 +98,7 @@ module.exports = function (RED) {
     };
 
     let writeTokenFile = (nodeId, tokens, callback) => {
-        alltokens = {};
+        alltokens = loadTokenFile() || {};
         alltokens[nodeId] = tokens;
         fs.writeFile(RED.settings.userDir + '/homeconnect_tokens.json', JSON.stringify(alltokens), callback);
     }
