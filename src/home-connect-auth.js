@@ -95,17 +95,22 @@ module.exports = function (RED) {
 
     let loadTokenFile = () => {
         let path = RED.settings.userDir + '/homeconnect_tokens.json';
-        if (fs.existsSync(path)) {
-            let content = fs.readFileSync(path, 'utf8');
-            let tokens = JSON.parse(content);
-
-            return tokens;
+        try {
+            if (fs.existsSync(path)) {
+                let content = fs.readFileSync(path, 'utf8');
+                let tokens = JSON.parse(content);
+    
+                return tokens;
+            }
+        } catch (err) {
+            console.error(err);
         }
-        return null;
+
+        return {};
     };
 
     let writeTokenFile = (nodeId, tokens, callback) => {
-        alltokens = loadTokenFile() || {};
+        alltokens = loadTokenFile();
         alltokens[nodeId] = tokens;
         fs.writeFile(RED.settings.userDir + '/homeconnect_tokens.json', JSON.stringify(alltokens), callback);
     }
