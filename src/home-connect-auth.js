@@ -37,11 +37,11 @@ module.exports = function (RED) {
 
                 node.tokens = { ...JSON.parse(body), timestamp: Date.now() };
 
-                writeTokenFile(node.id, node.tokens, (err) => {
-                    if (err) {
+                try {
+                    writeTokenFile(node.id, node.tokens);
+                } catch (err) {
                         node.error(err);
                     }
-                });
 
                 node.access_token = node.tokens.access_token;
                 node.emit('home-connect-auth');
@@ -109,10 +109,10 @@ module.exports = function (RED) {
         return {};
     };
 
-    let writeTokenFile = (nodeId, tokens, callback) => {
+    let writeTokenFile = (nodeId, tokens) => {
         alltokens = loadTokenFile();
         alltokens[nodeId] = tokens;
-        fs.writeFile(RED.settings.userDir + '/homeconnect_tokens.json', JSON.stringify(alltokens), callback);
+        fs.writeFileSync(RED.settings.userDir + '/homeconnect_tokens.json', JSON.stringify(alltokens,null,1));
     }
 
     let runningAuth = null;
@@ -160,11 +160,11 @@ module.exports = function (RED) {
 
             node.tokens = { ...JSON.parse(body), timestamp: Date.now() };
 
-            writeTokenFile(nodeId, node.tokens, (err) => {
-                if (err) {
+            try {
+                writeTokenFile(nodeId, node.tokens);
+            } catch (err) {
                     node.error(err);
                 }
-            });
 
             node.access_token = node.tokens.access_token;
             node.emit('home-connect-auth');
