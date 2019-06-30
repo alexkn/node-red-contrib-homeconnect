@@ -10,6 +10,7 @@ module.exports = function (RED) {
         this.client_id = this.credentials.client_id;
         this.client_secret = this.credentials.client_secret;
         this.access_token = null;
+        this.refreshTokenTimer = null;
 
         const node = this;
 
@@ -40,13 +41,28 @@ module.exports = function (RED) {
                 try {
                     writeTokenFile(node.id, node.tokens);
                 } catch (err) {
-                        node.error(err);
-                    }
+                    node.error(err);
+                }
 
                 node.access_token = node.tokens.access_token;
+                node.startRefreshTokenTimer();
                 node.emit('home-connect-auth');
             });
         };
+
+        node.startRefreshTokenTimer = () => {
+            if(node.refreshTokenTimer) {
+                clearTimeout(node.refreshTokenTimer);
+                node.refreshTokenTimer = null;
+            }
+
+            if(node.tokens.expires_in) {
+                node.refreshTokenTimer = setTimeout(() => {
+                    node.log('refreshing token...');
+                    node.refreshTokens();
+                }, node.tokens.expires_in * 1000);
+            }
+        }
 
         node.loadTokenFile = () => {
             try {
@@ -76,6 +92,11 @@ module.exports = function (RED) {
 
         node.on('close', () => {
             RED.events.off("nodes-started", nodeStarted);
+
+            if(node.refreshTokenTimer) {
+                clearTimeout(node.refreshTokenTimer);
+                node.refreshTokenTimer = null;
+            }
         });
     }
     RED.nodes.registerType('home-connect-auth', HomeConnectAuth, {
@@ -163,10 +184,11 @@ module.exports = function (RED) {
             try {
                 writeTokenFile(nodeId, node.tokens);
             } catch (err) {
-                    node.error(err);
-                }
+                node.error(err);
+            }
 
             node.access_token = node.tokens.access_token;
+            node.startRefreshTokenTimer();
             node.emit('home-connect-auth');
         });
 
