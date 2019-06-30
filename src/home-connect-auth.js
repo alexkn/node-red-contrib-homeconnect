@@ -43,11 +43,9 @@ module.exports = function (RED) {
 
         node.loadTokenFile = () => {
             try {
-                let path = RED.settings.userDir + '/homeconnect_tokens.json';
-                if (fs.existsSync(path)) {
-                    let content = fs.readFileSync(path, 'utf8');
-                    let tokens = JSON.parse(content);
+                let tokens = loadTokenFile();
 
+                if(tokens) {
                     if(tokens.refresh_token) {
                         node.tokens = tokens;
                     } else if (tokens[node.id].refresh_token) {
@@ -87,6 +85,17 @@ module.exports = function (RED) {
             return 'https://api.home-connect.com';
         }
     }
+
+    let loadTokenFile = () => {
+        let path = RED.settings.userDir + '/homeconnect_tokens.json';
+        if (fs.existsSync(path)) {
+            let content = fs.readFileSync(path, 'utf8');
+            let tokens = JSON.parse(content);
+
+            return tokens;
+        }
+        return null;
+    };
 
     let writeTokenFile = (nodeId, tokens, callback) => {
         alltokens = {};
