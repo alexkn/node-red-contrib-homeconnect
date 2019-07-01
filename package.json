@@ -21,10 +21,12 @@
   "node-red": {
     "nodes": {
       "home-connect-auth": "src/home-connect-auth.js",
-      "home-connect-request": "src/home-connect-request.js"
+      "home-connect-request": "src/home-connect-request.js",
+      "home-connect-event": "src/home-connect-event.js"
     }
   },
   "dependencies": {
+    "eventsource": "^1.0.7",
     "request": "^2.88.0",
     "swagger-client": "^3.8.22"
   }

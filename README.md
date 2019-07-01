@@ -16,11 +16,12 @@ To install HomeConnect nodes for Node-RED, run the following command inside your
 ### Available Nodes
 - [home-connect-auth](#home-connect-auth)
 - [home-connect-request](#home-connect-request)
+- [home-connect-event](#home-connect-event)
 
 ## home-connect-auth
 The node handles the authentication for the HomeConnect Developer API.
 
-Start the authorization from the properties dialog, but save and deploy your changes before finishing the authorization at Home Connect. 
+Start the authorization from the properties dialog, but save and deploy your changes before finishing the authorization at Home Connect.
 
 ### Node Properties
 
@@ -46,3 +47,15 @@ An input triggers the request to the HomeConnect API.
 | **HAID**       | HAID of the home appliance                                 |
 | **Option Key** | Option Key in case you want to control a specific option   |
 | **Body**       | JSON data in case you want to set e.g. a program or option |
+
+## home-connect-event
+The Request node requires an home-connect-auth node as an config node to recevice an access token.
+
+It outputs event messages for the selected home appliance.
+
+### Node Properties
+
+| Property       | Information                                                |
+|:--------------:|:----------------------------------------------------------:|
+| **Name**       | Name of the node *(optional)*                              |
+| **HAID**       | HAID of the home appliance                                 |

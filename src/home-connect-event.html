@@ -1,0 +1,32 @@
+<script type="text/javascript">
+    RED.nodes.registerType('home-connect-event', {
+        category: 'HomeConnect',
+        defaults: {
+            auth: {value:"", type:"home-connect-auth", required: true},
+            name: { value: '' },
+            haid: { value: '' }
+        },
+        outputs: 1,
+        label: function () {
+            return this.name || 'home-connect-event';
+        },
+        color: '#2392d8',
+        icon: 'bridge.png',
+        oneditprepare: function () {
+        }
+    });
+</script>
+<script type="text/x-red" data-template-name="home-connect-event">
+    <div class="form-row">
+        <label for="node-input-auth"><i class="icon-tag"></i> Auth</label>
+        <select id="node-input-auth"></select>
+    </div>
+    <div class="form-row">
+        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+        <input type="text" id="node-input-name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-haid">HAID</label>
+        <input type="text" id="node-input-haid">
+    </div>
+</script>
