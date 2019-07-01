@@ -42,8 +42,8 @@ module.exports = function (RED) {
         }
 
         node.onError = (error) => {
-            node.error(JSON.stringify(e));
-            node.status({ fill: 'red', shape: 'ring', text: e.message });
+            node.error(JSON.stringify(error));
+            node.status({ fill: 'red', shape: 'ring', text: error.message });
         }
 
         node.handleMessage = (event) => {
