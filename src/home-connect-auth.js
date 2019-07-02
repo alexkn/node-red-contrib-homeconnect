@@ -14,6 +14,8 @@ module.exports = function (RED) {
 
         const node = this;
 
+        node.setMaxListeners(100);
+
         node.getHost = () => {
             return getHost(node.simulation_mode);
         }
@@ -23,9 +25,9 @@ module.exports = function (RED) {
             // TODO: remove when fixed
             let body = 'grant_type=refresh_token&client_secret=' + node.client_secret + '&refresh_token=' + node.tokens.refresh_token
             if(node.simulation_mode) {
-                body = body + '&client_id=' + node.client_id 
+                body = body + '&client_id=' + node.client_id
             }
-            
+
             request.post({
                 headers: {'content-type' : 'application/x-www-form-urlencoded'},
                 url: node.getHost() + '/security/oauth/token',
@@ -120,7 +122,7 @@ module.exports = function (RED) {
             if (fs.existsSync(path)) {
                 let content = fs.readFileSync(path, 'utf8');
                 let tokens = JSON.parse(content);
-    
+
                 return tokens;
             }
         } catch (err) {
@@ -168,8 +170,8 @@ module.exports = function (RED) {
         request.post({
             headers: {'content-type' : 'application/x-www-form-urlencoded'},
             url: getHost(runningAuth.simulation_mode) + '/security/oauth/token',
-            body: 'client_id=' + runningAuth.client_id + 
-                '&client_secret=' + runningAuth.client_secret + 
+            body: 'client_id=' + runningAuth.client_id +
+                '&client_secret=' + runningAuth.client_secret +
                 '&grant_type=authorization_code&code=' + authCode +
                 '&redirect_uri=' + runningAuth.callback_url
         }, (error, response, body) => {
