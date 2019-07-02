@@ -18,14 +18,14 @@ module.exports = function (RED) {
 
         node.getHost = () => {
             return getHost(node.simulation_mode);
-        }
+        };
 
         node.refreshTokens = () => {
             // The Simulator currently expects the client_id
             // TODO: remove when fixed
-            let body = 'grant_type=refresh_token&client_secret=' + node.client_secret + '&refresh_token=' + node.tokens.refresh_token
+            let body = 'grant_type=refresh_token&client_secret=' + node.client_secret + '&refresh_token=' + node.tokens.refresh_token;
             if(node.simulation_mode) {
-                body = body + '&client_id=' + node.client_id
+                body = body + '&client_id=' + node.client_id;
             }
 
             request.post({
@@ -64,7 +64,7 @@ module.exports = function (RED) {
                     node.refreshTokens();
                 }, node.tokens.expires_in * 1000);
             }
-        }
+        };
 
         node.loadTokenFile = () => {
             try {
@@ -90,10 +90,10 @@ module.exports = function (RED) {
             node.loadTokenFile();
         };
 
-        RED.events.on("nodes-started", nodeStarted);
+        RED.events.on('nodes-started', nodeStarted);
 
         node.on('close', () => {
-            RED.events.off("nodes-started", nodeStarted);
+            RED.events.off('nodes-started', nodeStarted);
 
             if(node.refreshTokenTimer) {
                 clearTimeout(node.refreshTokenTimer);
@@ -114,7 +114,7 @@ module.exports = function (RED) {
         } else {
             return 'https://api.home-connect.com';
         }
-    }
+    };
 
     let loadTokenFile = () => {
         let path = RED.settings.userDir + '/homeconnect_tokens.json';
@@ -133,10 +133,10 @@ module.exports = function (RED) {
     };
 
     let writeTokenFile = (nodeId, tokens) => {
-        alltokens = loadTokenFile();
+        let alltokens = loadTokenFile();
         alltokens[nodeId] = tokens;
         fs.writeFileSync(RED.settings.userDir + '/homeconnect_tokens.json', JSON.stringify(alltokens,null,1));
-    }
+    };
 
     let runningAuth = null;
 
@@ -197,4 +197,4 @@ module.exports = function (RED) {
         runningAuth = null;
         res.sendStatus(200);
     });
-}
+};

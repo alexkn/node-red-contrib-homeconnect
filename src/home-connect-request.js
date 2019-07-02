@@ -19,7 +19,7 @@ module.exports = function (RED) {
         const urls = {
             simulation: 'https://apiclient.home-connect.com/hcsdk.yaml',
             production: 'https://apiclient.home-connect.com/hcsdk-production.yaml'
-        }
+        };
 
         this.status({ fill: 'red', shape: 'ring', text: 'not connected' });
 
@@ -36,7 +36,7 @@ module.exports = function (RED) {
             }
 
             let tag = node.tag || msg.tag;
-            let operationId = node.operationId || msg.operationId
+            let operationId = node.operationId || msg.operationId;
             node.client.apis[tag][operationId]({
                 haid: node.haid || msg.haid,
                 body: node.body || msg.body,
@@ -46,22 +46,28 @@ module.exports = function (RED) {
                 imagekey: node.imagekey || msg.imagekey,
                 settingkey: node.settingkey || msg.settingkey
             })
-            .then(response => {
-                let res = response.data;
-                try {
-                    res = JSON.parse(res);
-                } catch (error) {}
-                node.send({
-                    status: response.status,
-                    statusText: response.statusText,
-                    payload: res
+                .then(response => {
+                    let res = response.data;
+
+                    try {
+                        if(res && res.length > 0) {
+                            res = JSON.parse(res);
+                        }
+                    } catch (error) {
+                        node.error(error.message);
+                    }
+
+                    node.send({
+                        status: response.status,
+                        statusText: response.statusText,
+                        payload: res
+                    });
+                })
+                .catch(error => {
+                    node.send({
+                        error: error
+                    });
                 });
-            })
-            .catch(error => {
-                node.send({
-                    error: error
-                });
-            });
         });
 
         node.getSwaggerClient = () => {
@@ -70,16 +76,16 @@ module.exports = function (RED) {
                     url: node.auth.simulation_mode ? urls.simulation : urls.production,
                     requestInterceptor: req => {
                         req.headers['accept'] = 'application/vnd.bsh.sdk.v1+json, image/jpeg',
-                        req.headers['authorization'] = 'Bearer ' + node.auth.access_token
+                        req.headers['authorization'] = 'Bearer ' + node.auth.access_token;
                     }
                 })
-                .then(client => {
-                    node.client = client;
-                    node.status({ fill: 'green', shape: 'dot', text: 'ready' });
-                })
-                .catch(error => {
-                    console.log(error);
-                });
+                    .then(client => {
+                        node.client = client;
+                        node.status({ fill: 'green', shape: 'dot', text: 'ready' });
+                    })
+                    .catch(error => {
+                        console.log(error);
+                    });
             }
         };
     }

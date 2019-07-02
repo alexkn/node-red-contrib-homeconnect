@@ -25,9 +25,23 @@
       "home-connect-event": "src/home-connect-event.js"
     }
   },
+  "scripts": {
+    "test": "eslint .",
+    "prepublishOnly": "npm test"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm test",
+      "pre-push": "npm test"
+    }
+  },
   "dependencies": {
     "eventsource": "^1.0.7",
     "request": "^2.88.0",
     "swagger-client": "^3.8.22"
+  },
+  "devDependencies": {
+    "eslint": "^6.0.1",
+    "husky": "^3.0.0"
   }
 }

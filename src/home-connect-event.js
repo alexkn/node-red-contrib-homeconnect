@@ -37,14 +37,14 @@ module.exports = function (RED) {
             node.eventSource.addEventListener('CONNECTED', node.handleMessage);
         };
 
-        node.onOpen = (data) => {
+        node.onOpen = () => {
             node.status({ fill: 'green', shape: 'dot', text: 'ready' });
-        }
+        };
 
         node.onError = (error) => {
             node.error(JSON.stringify(error));
             node.status({ fill: 'red', shape: 'ring', text: error.message });
-        }
+        };
 
         node.handleMessage = (event) => {
             let data = undefined;
@@ -81,7 +81,7 @@ module.exports = function (RED) {
                 node.eventSource.close();
                 this.status({ fill: 'red', shape: 'ring', text: 'disconnected' });
             }
-        }
+        };
 
         node.on('close', () => {
             node.closeEventSource();
