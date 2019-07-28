@@ -11,10 +11,9 @@ module.exports = function (RED) {
         this.client_secret = this.credentials.client_secret;
         this.access_token = null;
         this.refreshTokenTimer = null;
+        this.nodes = {};
 
         const node = this;
-
-        node.setMaxListeners(100);
 
         node.getHost = () => {
             return getHost(node.simulation_mode);
@@ -48,7 +47,7 @@ module.exports = function (RED) {
 
                 node.access_token = node.tokens.access_token;
                 node.startRefreshTokenTimer();
-                node.emit('home-connect-auth');
+                node.AccessTokenRefreshed();
             });
         };
 
@@ -83,6 +82,20 @@ module.exports = function (RED) {
                 }
             } catch (err) {
                 node.error(err);
+            }
+        };
+
+        this.register = (node) => {
+            this.nodes[node.id] = node;
+        };
+
+        this.unregister = (node) => {
+            delete this.nodes[node.id];
+        };
+
+        this.AccessTokenRefreshed = () => {
+            for(let nodeId in this.nodes) {
+                this.nodes[nodeId].AccessTokenRefreshed();
             }
         };
 
@@ -191,7 +204,7 @@ module.exports = function (RED) {
 
             node.access_token = node.tokens.access_token;
             node.startRefreshTokenTimer();
-            node.emit('home-connect-auth');
+            node.AccessTokenRefreshed();
         });
 
         runningAuth = null;

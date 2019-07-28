@@ -10,13 +10,14 @@ module.exports = function (RED) {
         this.eventSource = null;
 
         this.status({ fill: 'red', shape: 'ring', text: 'not connected' });
+        this.auth.register(this);
 
         const node = this;
 
-        node.auth.on('home-connect-auth', () => {
+        node.AccessTokenRefreshed = () => {
             node.closeEventSource();
             node.initEventSource();
-        });
+        };
 
         node.initEventSource = () => {
             let url = node.auth.getHost() + '/api/homeappliances/' + node.haid + '/events';
@@ -85,6 +86,7 @@ module.exports = function (RED) {
 
         node.on('close', () => {
             node.closeEventSource();
+            node.auth.unregister(this);
         });
     }
 

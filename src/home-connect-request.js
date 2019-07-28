@@ -22,12 +22,13 @@ module.exports = function (RED) {
         };
 
         this.status({ fill: 'red', shape: 'ring', text: 'not connected' });
+        this.auth.register(this);
 
         const node = this;
 
-        node.auth.on('home-connect-auth', () => {
+        node.AccessTokenRefreshed = () => {
             node.getSwaggerClient();
-        });
+        };
 
         node.on('input', msg => {
             if(!node.client) {
@@ -68,6 +69,10 @@ module.exports = function (RED) {
                         error: error
                     });
                 });
+        });
+
+        node.on('close', () => {
+            node.auth.unregister(this);
         });
 
         node.getSwaggerClient = () => {
