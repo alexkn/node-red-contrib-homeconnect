@@ -58,16 +58,15 @@ module.exports = function (RED) {
                         node.error(error.message);
                     }
 
-                    node.send({
-                        status: response.status,
-                        statusText: response.statusText,
-                        payload: res
-                    });
+                    msg.status = response.status;
+                    msg.statusText = response.statusText;
+                    msg.payload = res;
+
+                    node.send(msg);
                 })
                 .catch(error => {
-                    node.send({
-                        error: error
-                    });
+                    msg.error = error;
+                    node.send(msg);
                 });
         });
 
