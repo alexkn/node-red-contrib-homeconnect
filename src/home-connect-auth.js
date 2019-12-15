@@ -65,6 +65,35 @@ module.exports = function (RED) {
             }
         };
 
+        node.pollToken = (authCode, callback_url) => {
+            request.post({
+                headers: {'content-type' : 'application/x-www-form-urlencoded'},
+                url: getHost(node.simulation_mode) + '/security/oauth/token',
+                body: 'client_id=' + node.client_id +
+                    '&client_secret=' + node.client_secret +
+                    '&grant_type=authorization_code&code=' + authCode +
+                    '&redirect_uri=' + callback_url
+            }, (error, response, body) => {
+
+                if (error || response.statusCode != 200) {
+                    node.error('getTokens failed: ' + body);
+                    return;
+                }
+
+                node.tokens = { ...JSON.parse(body), timestamp: Date.now() };
+
+                try {
+                    writeTokenFile(node.id, node.tokens);
+                } catch (err) {
+                    node.error(err);
+                }
+
+                node.access_token = node.tokens.access_token;
+                node.startRefreshTokenTimer();
+                node.AccessTokenRefreshed();
+            });
+        };
+
         node.loadTokenFile = () => {
             try {
                 let tokens = loadTokenFile();
@@ -180,32 +209,7 @@ module.exports = function (RED) {
 
         let authCode = req.query.code;
 
-        request.post({
-            headers: {'content-type' : 'application/x-www-form-urlencoded'},
-            url: getHost(runningAuth.simulation_mode) + '/security/oauth/token',
-            body: 'client_id=' + runningAuth.client_id +
-                '&client_secret=' + runningAuth.client_secret +
-                '&grant_type=authorization_code&code=' + authCode +
-                '&redirect_uri=' + runningAuth.callback_url
-        }, (error, response, body) => {
-
-            if (error || response.statusCode != 200) {
-                node.error('getTokens failed: ' + body);
-                return;
-            }
-
-            node.tokens = { ...JSON.parse(body), timestamp: Date.now() };
-
-            try {
-                writeTokenFile(nodeId, node.tokens);
-            } catch (err) {
-                node.error(err);
-            }
-
-            node.access_token = node.tokens.access_token;
-            node.startRefreshTokenTimer();
-            node.AccessTokenRefreshed();
-        });
+        node.pollToken(authCode, runningAuth.callback_url);
 
         runningAuth = null;
         res.sendStatus(200);
