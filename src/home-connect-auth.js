@@ -1,6 +1,5 @@
 module.exports = function (RED) {
     const request = require('request');
-    const fs = require('fs');
 
     function HomeConnectAuth(config) {
         RED.nodes.createNode(this, config);
@@ -20,9 +19,11 @@ module.exports = function (RED) {
         };
 
         node.refreshTokens = () => {
+            if(!node.credentials.refresh_token) return;
+
             // The Simulator currently expects the client_id
             // TODO: remove when fixed
-            let body = 'grant_type=refresh_token&client_secret=' + node.client_secret + '&refresh_token=' + node.tokens.refresh_token;
+            let body = 'grant_type=refresh_token&client_secret=' + node.client_secret + '&refresh_token=' + node.credentials.refresh_token;
             if(node.simulation_mode) {
                 body = body + '&client_id=' + node.client_id;
             }
@@ -37,31 +38,27 @@ module.exports = function (RED) {
                     return;
                 }
 
-                node.tokens = { ...JSON.parse(body), timestamp: Date.now() };
+                let tokens = { ...JSON.parse(body), timestamp: Date.now() };
 
-                try {
-                    writeTokenFile(node.id, node.tokens);
-                } catch (err) {
-                    node.error(err);
-                }
+                node.saveRefreshToken(tokens.refresh_token);
 
-                node.access_token = node.tokens.access_token;
-                node.startRefreshTokenTimer();
+                node.access_token = tokens.access_token;
+                node.startRefreshTokenTimer(tokens.expires_in);
                 node.AccessTokenRefreshed();
             });
         };
 
-        node.startRefreshTokenTimer = () => {
+        node.startRefreshTokenTimer = (expires_in) => {
             if(node.refreshTokenTimer) {
                 clearTimeout(node.refreshTokenTimer);
                 node.refreshTokenTimer = null;
             }
 
-            if(node.tokens.expires_in) {
+            if(expires_in) {
                 node.refreshTokenTimer = setTimeout(() => {
                     node.log('refreshing token...');
                     node.refreshTokens();
-                }, node.tokens.expires_in * 1000);
+                }, expires_in * 1000);
             }
         };
 
@@ -80,38 +77,23 @@ module.exports = function (RED) {
                     return;
                 }
 
-                node.tokens = { ...JSON.parse(body), timestamp: Date.now() };
+                let tokens = { ...JSON.parse(body), timestamp: Date.now() };
 
-                try {
-                    writeTokenFile(node.id, node.tokens);
-                } catch (err) {
-                    node.error(err);
-                }
+                node.saveRefreshToken(tokens.refresh_token);
 
-                node.access_token = node.tokens.access_token;
-                node.startRefreshTokenTimer();
+                node.access_token = tokens.access_token;
+                node.startRefreshTokenTimer(tokens.expires_in);
                 node.AccessTokenRefreshed();
             });
         };
 
-        node.loadTokenFile = () => {
-            try {
-                let tokens = loadTokenFile();
+        node.saveRefreshToken = (refresh_token) => {
+            node.credentials.refresh_token = refresh_token;
 
-                if(tokens) {
-                    if(tokens.refresh_token) {
-                        node.tokens = tokens;
-                    } else if (tokens[node.id]) {
-                        node.tokens = tokens[node.id];
-                    }
-
-                    if (node.tokens != undefined) {
-                        node.refreshTokens();
-                    }
-                }
-            } catch (err) {
-                node.error(err);
-            }
+            let credentials = RED.nodes.getCredentials(node.id);
+            credentials.refresh_token = refresh_token;
+            RED.nodes.deleteCredentials(node.id);
+            RED.nodes.addCredentials(node.id, credentials);
         };
 
         this.register = (node) => {
@@ -129,7 +111,7 @@ module.exports = function (RED) {
         };
 
         let nodeStarted = () => {
-            node.loadTokenFile();
+            node.refreshTokens();
         };
 
         RED.events.on('nodes-started', nodeStarted);
@@ -146,7 +128,8 @@ module.exports = function (RED) {
     RED.nodes.registerType('home-connect-auth', HomeConnectAuth, {
         credentials: {
             client_id: { type: 'text' },
-            client_secret: { type: 'text' }
+            client_secret: { type: 'text' },
+            refresh_token: { type: 'password' },
         }
     });
 
@@ -156,28 +139,6 @@ module.exports = function (RED) {
         } else {
             return 'https://api.home-connect.com';
         }
-    };
-
-    let loadTokenFile = () => {
-        let path = RED.settings.userDir + '/homeconnect_tokens.json';
-        try {
-            if (fs.existsSync(path)) {
-                let content = fs.readFileSync(path, 'utf8');
-                let tokens = JSON.parse(content);
-
-                return tokens;
-            }
-        } catch (err) {
-            console.error(err);
-        }
-
-        return {};
-    };
-
-    let writeTokenFile = (nodeId, tokens) => {
-        let alltokens = loadTokenFile();
-        alltokens[nodeId] = tokens;
-        fs.writeFileSync(RED.settings.userDir + '/homeconnect_tokens.json', JSON.stringify(alltokens,null,1));
     };
 
     let runningAuth = null;
