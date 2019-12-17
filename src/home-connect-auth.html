@@ -1,4 +1,12 @@
 <script type="text/javascript">
+    let HomeConnectAuthPollTimout;
+
+    let HomeConnectAuthCancelTimeout = function() {
+        if(HomeConnectAuthPollTimout) {
+            clearTimeout(HomeConnectAuthPollTimout);
+        }
+    };
+
     RED.nodes.registerType('home-connect-auth', {
         category: 'config',
         defaults: {
@@ -7,7 +15,8 @@
         },
         credentials: {
             client_id: { type: 'text', required: true },
-            client_secret: { type: 'text', required: true }
+            client_secret: { type: 'text', required: true },
+            refresh_token: { type: 'text', required: true }
         },
         label: function () {
             return this.name || 'home-connect-auth';
@@ -16,7 +25,23 @@
         icon: 'bridge.png',
         oneditprepare: function() {
             var node = this;
-            
+
+            let polltoken = function () {
+                $.getJSON('homeconnect/auth/polltoken', {}, function(response) {
+                    if(response.error) {
+                        alert(response.error);
+                        return;
+                    }
+
+                    if(response.refresh_token) {
+                        $('#node-config-input-refresh_token').val(response.refresh_token);
+                        return;
+                    }
+
+                    HomeConnectAuthPollTimout = setTimeout(polltoken, 1000);
+                });
+            };
+
             $('#node-config-button-start-auth').click(function() {
                 let client_id = $('#node-config-input-client_id').val();
                 let client_secret = $('#node-config-input-client_secret').val();
@@ -29,13 +54,18 @@
                     simulation_mode: simulation_mode
                 }, function(response) {
                     window.open(response.url);
+                    $('#node-config-input-refresh_token').val('');
+                    polltoken();
                 });
             });
 
             $('#node-config-input-client_id,#node-config-input-client_secret').change(function() {
                 $('#node-config-button-start-auth').prop('disabled', !$('#node-config-input-client_id').val() || !$('#node-config-input-client_secret').val());
             });
-        }
+        },
+        oneditsave: HomeConnectAuthCancelTimeout,
+        oneditcancel: HomeConnectAuthCancelTimeout,
+        oneditdelete: HomeConnectAuthCancelTimeout
     });
 </script>
 <script type="text/x-red" data-template-name="home-connect-auth">
@@ -59,6 +89,7 @@
         <button class="btn" id="node-config-button-start-auth">Start authorization</button>
     </div>
     <div class="form-row">
-        <span>Start the authorization, but save and deploy your changes before finishing the authorization at Home Connect.</span>
+        <label for="node-config-input-refresh_token">Refresh Token</label>
+        <input type="text" id="node-config-input-refresh_token" readonly="readonly">
     </div>
 </script>

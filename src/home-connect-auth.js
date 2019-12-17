@@ -21,6 +21,8 @@ module.exports = function (RED) {
         node.refreshTokens = () => {
             if(!node.credentials.refresh_token) return;
 
+            node.log('refreshing token...');
+
             // The Simulator currently expects the client_id
             // TODO: remove when fixed
             let body = 'grant_type=refresh_token&client_secret=' + node.client_secret + '&refresh_token=' + node.credentials.refresh_token;
@@ -40,8 +42,6 @@ module.exports = function (RED) {
 
                 let tokens = { ...JSON.parse(body), timestamp: Date.now() };
 
-                node.saveRefreshToken(tokens.refresh_token);
-
                 node.access_token = tokens.access_token;
                 node.startRefreshTokenTimer(tokens.expires_in);
                 node.AccessTokenRefreshed();
@@ -56,44 +56,9 @@ module.exports = function (RED) {
 
             if(expires_in) {
                 node.refreshTokenTimer = setTimeout(() => {
-                    node.log('refreshing token...');
                     node.refreshTokens();
                 }, expires_in * 1000);
             }
-        };
-
-        node.pollToken = (authCode, callback_url) => {
-            request.post({
-                headers: {'content-type' : 'application/x-www-form-urlencoded'},
-                url: getHost(node.simulation_mode) + '/security/oauth/token',
-                body: 'client_id=' + node.client_id +
-                    '&client_secret=' + node.client_secret +
-                    '&grant_type=authorization_code&code=' + authCode +
-                    '&redirect_uri=' + callback_url
-            }, (error, response, body) => {
-
-                if (error || response.statusCode != 200) {
-                    node.error('getTokens failed: ' + body);
-                    return;
-                }
-
-                let tokens = { ...JSON.parse(body), timestamp: Date.now() };
-
-                node.saveRefreshToken(tokens.refresh_token);
-
-                node.access_token = tokens.access_token;
-                node.startRefreshTokenTimer(tokens.expires_in);
-                node.AccessTokenRefreshed();
-            });
-        };
-
-        node.saveRefreshToken = (refresh_token) => {
-            node.credentials.refresh_token = refresh_token;
-
-            let credentials = RED.nodes.getCredentials(node.id);
-            credentials.refresh_token = refresh_token;
-            RED.nodes.deleteCredentials(node.id);
-            RED.nodes.addCredentials(node.id, credentials);
         };
 
         this.register = (node) => {
@@ -129,7 +94,7 @@ module.exports = function (RED) {
         credentials: {
             client_id: { type: 'text' },
             client_secret: { type: 'text' },
-            refresh_token: { type: 'password' },
+            refresh_token: { type: 'text' },
         }
     });
 
@@ -142,6 +107,26 @@ module.exports = function (RED) {
     };
 
     let runningAuth = null;
+
+    let pollToken = (authCode) => {
+        request.post({
+            headers: {'content-type' : 'application/x-www-form-urlencoded'},
+            url: getHost(runningAuth.simulation_mode) + '/security/oauth/token',
+            body: 'client_id=' + runningAuth.client_id +
+                '&client_secret=' + runningAuth.client_secret +
+                '&grant_type=authorization_code&code=' + authCode +
+                '&redirect_uri=' + runningAuth.callback_url
+        }, (error, response, body) => {
+
+            if (error || response.statusCode != 200) {
+                runningAuth.error = body;
+            }
+
+            let tokens = JSON.parse(body);
+
+            runningAuth.refresh_token = tokens.refresh_token;
+        });
+    };
 
     RED.httpAdmin.get('/homeconnect/auth/start', (req, res) => {
         runningAuth = {
@@ -165,14 +150,31 @@ module.exports = function (RED) {
             return;
         }
 
-        let nodeId = runningAuth.node_id;
-        let node = RED.nodes.getNode(nodeId);
-
         let authCode = req.query.code;
 
-        node.pollToken(authCode, runningAuth.callback_url);
+        pollToken(authCode);
 
-        runningAuth = null;
         res.sendStatus(200);
+    });
+
+    RED.httpAdmin.get('/homeconnect/auth/polltoken', (req, res) => {
+        if (!runningAuth) {
+            res.sendStatus(400);
+            return;
+        }
+
+        if(runningAuth.error) {
+            res.send({'error': runningAuth.error});
+            runningAuth = null;
+            return;
+        }
+
+        if(runningAuth.refresh_token) {
+            res.send({'refresh_token': runningAuth.refresh_token});
+            runningAuth = null;
+            return;
+        }
+
+        res.send({});
     });
 };
