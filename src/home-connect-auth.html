@@ -11,7 +11,8 @@
         category: 'config',
         defaults: {
             name: { value: '' },
-            simulation_mode: { value: false }
+            simulation_mode: { value: false },
+            scope: { value: ''}
         },
         credentials: {
             client_id: { type: 'text', required: true },
@@ -45,13 +46,15 @@
             $('#node-config-button-start-auth').click(function() {
                 let client_id = $('#node-config-input-client_id').val();
                 let client_secret = $('#node-config-input-client_secret').val();
+                let scope = $('#node-config-input-scope').val();
                 let simulation_mode = $('#node-config-input-simulation_mode').prop('checked');
 
                 $.getJSON('homeconnect/auth/start', {
                     node_id: node.id,
                     client_id: client_id,
                     client_secret: client_secret,
-                    simulation_mode: simulation_mode
+                    simulation_mode: simulation_mode,
+                    scope: scope
                 }, function(response) {
                     window.open(response.url);
                     $('#node-config-input-refresh_token').val('');
@@ -81,6 +84,11 @@
         <label for="node-config-input-client_secret">Client Secret</label>
         <input type="text" id="node-config-input-client_secret">
     </div>
+    <div class="form-row">
+        <label for="node-config-input-scope">Scope</label>
+        <input type="text" id="node-config-input-scope">
+        <a target="_blank" id="node-help-scope" href="https://developer.home-connect.com/docs/authorization/scope">Help</a>
+    </div>    
     <div class="form-row">
         <label for="node-config-input-simulation_mode">Use Simulation</label>
         <input type="checkbox" id="node-config-input-simulation_mode">

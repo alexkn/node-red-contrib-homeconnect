@@ -6,6 +6,7 @@ module.exports = function (RED) {
 
         this.name = config.name;
         this.simulation_mode = config.simulation_mode;
+        this.scope = config.scope;
         this.client_id = this.credentials.client_id;
         this.client_secret = this.credentials.client_secret;
         this.access_token = null;
@@ -114,7 +115,8 @@ module.exports = function (RED) {
             url: getHost(runningAuth.simulation_mode) + '/security/oauth/token',
             body: 'client_id=' + runningAuth.client_id +
                 '&client_secret=' + runningAuth.client_secret +
-                '&grant_type=authorization_code&code=' + authCode +
+                '&grant_type=authorization_code' +
+                '&code=' + authCode +
                 '&redirect_uri=' + runningAuth.callback_url
         }, (error, response, body) => {
 
@@ -133,11 +135,16 @@ module.exports = function (RED) {
             node_id: req.query.node_id,
             client_id: req.query.client_id,
             client_secret: req.query.client_secret,
+            scope: req.query.scope,
             callback_url: req.protocol + '://' + req.get('host') + '/homeconnect/auth/callback',
             simulation_mode: (req.query.simulation_mode == 'true')
         };
 
-        const url = getHost(runningAuth.simulation_mode) + '/security/oauth/authorize' + '?client_id=' + runningAuth.client_id + '&response_type=code&redirect_uri=' + runningAuth.callback_url;
+        const url = getHost(runningAuth.simulation_mode) + '/security/oauth/authorize' +
+        '?client_id=' + runningAuth.client_id +
+        '&response_type=code' +
+        '&redirect_uri=' + runningAuth.callback_url +
+        '&scope=' + encodeURIComponent(runningAuth.scope);
 
         res.send({
             'url': url
@@ -150,9 +157,7 @@ module.exports = function (RED) {
             return;
         }
 
-        let authCode = req.query.code;
-
-        pollToken(authCode);
+        pollToken(req.query.code);
 
         res.sendStatus(200);
     });
