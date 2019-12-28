@@ -28,7 +28,7 @@ module.exports = function (RED) {
 
             node.eventSource = new EventSource(url, {
                 headers: {
-                    'Authorization': 'Bearer ' + node.auth.access_token,
+                    'Authorization': 'Bearer ' + node.auth.getAccessToken(),
                     'Accept': 'text/event-stream'
                 }
             });

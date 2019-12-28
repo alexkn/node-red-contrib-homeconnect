@@ -75,12 +75,12 @@ module.exports = function (RED) {
         });
 
         node.getSwaggerClient = () => {
-            if (node.auth.access_token != undefined) {
+            if (node.auth.getAccessToken() != undefined) {
                 SwaggerClient({
                     url: node.auth.simulation_mode ? urls.simulation : urls.production,
                     requestInterceptor: req => {
                         req.headers['accept'] = 'application/vnd.bsh.sdk.v1+json, image/jpeg',
-                        req.headers['authorization'] = 'Bearer ' + node.auth.access_token;
+                        req.headers['authorization'] = 'Bearer ' + node.auth.getAccessToken();
                     }
                 })
                     .then(client => {

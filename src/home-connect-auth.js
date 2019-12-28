@@ -1,5 +1,6 @@
 module.exports = function (RED) {
     const request = require('request');
+    const tokenStorage = require('../lib/TokenStorage')(RED);
 
     function HomeConnectAuth(config) {
         RED.nodes.createNode(this, config);
@@ -9,7 +10,7 @@ module.exports = function (RED) {
         this.scope = config.scope;
         this.client_id = this.credentials.client_id;
         this.client_secret = this.credentials.client_secret;
-        this.access_token = null;
+        this.tokens = tokenStorage.getTokens(this.id);
         this.refreshTokenTimer = null;
         this.nodes = {};
 
@@ -19,14 +20,18 @@ module.exports = function (RED) {
             return getHost(node.simulation_mode);
         };
 
+        node.getAccessToken = () => {
+            return node.tokens.access_token; 
+        };
+
         node.refreshTokens = () => {
-            if(!node.credentials.refresh_token) return;
+            if(!node.tokens.refresh_token) return;
 
             node.log('refreshing token...');
 
             // The Simulator currently expects the client_id
             // TODO: remove when fixed
-            let body = 'grant_type=refresh_token&client_secret=' + node.client_secret + '&refresh_token=' + node.credentials.refresh_token;
+            let body = 'grant_type=refresh_token&client_secret=' + node.client_secret + '&refresh_token=' + node.tokens.refresh_token;
             if(node.simulation_mode) {
                 body = body + '&client_id=' + node.client_id;
             }
@@ -41,9 +46,12 @@ module.exports = function (RED) {
                     return;
                 }
 
-                let tokens = { ...JSON.parse(body), timestamp: Date.now() };
+                let tokens = JSON.parse(body);
+                tokens.expires_at = Math.floor(Date.now() / 1000) + tokens.expires_in;
+                delete tokens.expires_in;
 
-                node.access_token = tokens.access_token;
+                node.tokens = tokens;
+                tokenStorage.saveTokens(node.id, node.tokens);
                 node.startRefreshTokenTimer(tokens.expires_in);
                 node.AccessTokenRefreshed();
             });
@@ -95,7 +103,6 @@ module.exports = function (RED) {
         credentials: {
             client_id: { type: 'text' },
             client_secret: { type: 'text' },
-            refresh_token: { type: 'text' },
         }
     });
 
@@ -125,8 +132,11 @@ module.exports = function (RED) {
             }
 
             let tokens = JSON.parse(body);
+            tokens.expires_at = Math.floor(Date.now() / 1000) + tokens.expires_in;
+            delete tokens.expires_in;
+            tokenStorage.saveTokens(runningAuth.node_id, tokens);
 
-            runningAuth.refresh_token = tokens.refresh_token;
+            runningAuth.tokens = tokens;
         });
     };
 
@@ -174,8 +184,8 @@ module.exports = function (RED) {
             return;
         }
 
-        if(runningAuth.refresh_token) {
-            res.send({'refresh_token': runningAuth.refresh_token});
+        if(runningAuth.tokens) {
+            res.send({'tokens': 'received'});
             runningAuth = null;
             return;
         }

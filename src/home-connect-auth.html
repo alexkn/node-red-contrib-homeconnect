@@ -16,8 +16,7 @@
         },
         credentials: {
             client_id: { type: 'text', required: true },
-            client_secret: { type: 'text', required: true },
-            refresh_token: { type: 'text', required: true }
+            client_secret: { type: 'text', required: true }
         },
         label: function () {
             return this.name || 'home-connect-auth';
@@ -34,8 +33,8 @@
                         return;
                     }
 
-                    if(response.refresh_token) {
-                        $('#node-config-input-refresh_token').val(response.refresh_token);
+                    if(response.tokens) {
+                        $('#node-config-label-start-auth').text('tokens received');
                         return;
                     }
 
@@ -57,7 +56,7 @@
                     scope: scope
                 }, function(response) {
                     window.open(response.url);
-                    $('#node-config-input-refresh_token').val('');
+                    $('#node-config-label-start-auth').text('authorizing...');
                     polltoken();
                 });
             });
@@ -95,9 +94,6 @@
     </div>
     <div class="form-row">
         <button class="btn" id="node-config-button-start-auth">Start authorization</button>
-    </div>
-    <div class="form-row">
-        <label for="node-config-input-refresh_token">Refresh Token</label>
-        <input type="text" id="node-config-input-refresh_token" readonly="readonly">
+        <label id="node-config-label-start-auth"></label>
     </div>
 </script>
