@@ -9,10 +9,6 @@ https://developer.home-connect.com/
 * After setting up an account, register a new application and select **Authorization Code Grant Flow** as the OAuth Flow.
 * Set the Redirect URI to `http://<ip-address>:<port>/homeconnect/auth/callback`. Set the `ip-address` and `port` to match your Node-RED installation.
 
-To install HomeConnect nodes for Node-RED, run the following command inside your Node-RED folder:
-
-`npm install alexkn/node-red-contrib-homeconnect`
-
 ### Available Nodes
 - [home-connect-auth](#home-connect-auth)
 - [home-connect-request](#home-connect-request)
@@ -21,7 +17,7 @@ To install HomeConnect nodes for Node-RED, run the following command inside your
 ## home-connect-auth
 The node handles the authentication for the HomeConnect Developer API.
 
-Start the authorization from the properties dialog, but save and deploy your changes before finishing the authorization at Home Connect.
+Start the authorization from the properties dialog, finish the authorization at Home Connect and then save and deploy your changes.
 
 ### Node Properties
 
