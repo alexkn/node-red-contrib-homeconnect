@@ -1,5 +1,7 @@
+const request = require('request');
+const apiService = require('../lib/ApiService');
+
 module.exports = function (RED) {
-    const request = require('request');
     const tokenStorage = require('../lib/TokenStorage')(RED);
 
     function HomeConnectAuth(config) {
@@ -17,7 +19,7 @@ module.exports = function (RED) {
         const node = this;
 
         node.getHost = () => {
-            return getHost(node.simulation_mode);
+            return apiService.getHost(node.simulation_mode);
         };
 
         node.getAccessToken = () => {
@@ -104,20 +106,12 @@ module.exports = function (RED) {
         }
     });
 
-    let getHost = (simulation_mode) => {
-        if(simulation_mode) {
-            return 'https://simulator.home-connect.com';
-        } else {
-            return 'https://api.home-connect.com';
-        }
-    };
-
     let runningAuth = null;
 
     let pollToken = (authCode) => {
         request.post({
             headers: {'content-type' : 'application/x-www-form-urlencoded'},
-            url: getHost(runningAuth.simulation_mode) + '/security/oauth/token',
+            url: apiService.getHost(runningAuth.simulation_mode) + '/security/oauth/token',
             body: 'client_id=' + runningAuth.client_id +
                 '&client_secret=' + runningAuth.client_secret +
                 '&grant_type=authorization_code' +
@@ -148,7 +142,7 @@ module.exports = function (RED) {
             simulation_mode: (req.query.simulation_mode == 'true')
         };
 
-        const url = getHost(runningAuth.simulation_mode) + '/security/oauth/authorize' +
+        const url = apiService.getHost(runningAuth.simulation_mode) + '/security/oauth/authorize' +
         '?client_id=' + runningAuth.client_id +
         '&response_type=code' +
         '&redirect_uri=' + runningAuth.callback_url +
