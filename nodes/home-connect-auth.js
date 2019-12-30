@@ -109,11 +109,7 @@ module.exports = function (RED) {
             simulation_mode: (req.query.simulation_mode == 'true')
         };
 
-        const url = apiService.getHost(runningAuth.simulation_mode) + '/security/oauth/authorize' +
-        '?client_id=' + runningAuth.client_id +
-        '&response_type=code' +
-        '&redirect_uri=' + runningAuth.callback_url +
-        '&scope=' + encodeURIComponent(runningAuth.scope);
+        const url = apiService.buildAuthorizationUrl(runningAuth.simulation_mode, runningAuth.client_id, runningAuth.callback_url, runningAuth.scope);
 
         res.send({
             'url': url
