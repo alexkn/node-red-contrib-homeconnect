@@ -52,22 +52,20 @@ module.exports = function (RED) {
 
                 node.tokens = tokens;
                 tokenStorage.saveTokens(node.id, node.tokens);
-                node.startRefreshTokenTimer(tokens.expires_in);
+                node.startRefreshTokenTimer();
                 node.AccessTokenRefreshed();
             });
         };
 
-        node.startRefreshTokenTimer = (expires_in) => {
+        node.startRefreshTokenTimer = () => {
             if(node.refreshTokenTimer) {
                 clearTimeout(node.refreshTokenTimer);
                 node.refreshTokenTimer = null;
             }
-
-            if(expires_in) {
-                node.refreshTokenTimer = setTimeout(() => {
-                    node.refreshTokens();
-                }, expires_in * 1000);
-            }
+            let expires_in = node.tokens.expires_at * 1000 - Date.now();
+            node.refreshTokenTimer = setTimeout(() => {
+                node.refreshTokens();
+            }, expires_in);
         };
 
         this.register = (node) => {
