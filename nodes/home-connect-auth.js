@@ -26,37 +26,19 @@ module.exports = function (RED) {
             return node.tokens.access_token; 
         };
 
-        node.refreshTokens = () => {
+        node.refreshTokens = async () => {
             if(!node.tokens.refresh_token) return;
 
             node.log('refreshing token...');
-
-            // The Simulator currently expects the client_id
-            // TODO: remove when fixed
-            let body = 'grant_type=refresh_token&client_secret=' + node.client_secret + '&refresh_token=' + node.tokens.refresh_token;
-            if(node.simulation_mode) {
-                body = body + '&client_id=' + node.client_id;
-            }
-
-            request.post({
-                headers: {'content-type' : 'application/x-www-form-urlencoded'},
-                url: node.getHost() + '/security/oauth/token',
-                body: body
-            }, (error, response, body) => {
-                if (error || response.statusCode != 200) {
-                    node.error('refreshTokens failed: ' + body);
-                    return;
-                }
-
-                let tokens = JSON.parse(body);
-                tokens.expires_at = Math.floor(Date.now() / 1000) + tokens.expires_in;
-                delete tokens.expires_in;
-
+            try {
+                let tokens = await apiService.refreshToken(node.simulation_mode, node.client_secret, node.tokens.refresh_token, node.client_id);
                 node.tokens = tokens;
                 tokenStorage.saveTokens(node.id, node.tokens);
                 node.startRefreshTokenTimer();
                 node.AccessTokenRefreshed();
-            });
+            } catch(err) {
+                node.error(err);
+            }           
         };
 
         node.startRefreshTokenTimer = () => {
