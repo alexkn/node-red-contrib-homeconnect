@@ -1,4 +1,3 @@
-const request = require('request');
 const apiService = require('../lib/ApiService');
 
 module.exports = function (RED) {
@@ -90,28 +89,14 @@ module.exports = function (RED) {
 
     let runningAuth = null;
 
-    let pollToken = (authCode) => {
-        request.post({
-            headers: {'content-type' : 'application/x-www-form-urlencoded'},
-            url: apiService.getHost(runningAuth.simulation_mode) + '/security/oauth/token',
-            body: 'client_id=' + runningAuth.client_id +
-                '&client_secret=' + runningAuth.client_secret +
-                '&grant_type=authorization_code' +
-                '&code=' + authCode +
-                '&redirect_uri=' + runningAuth.callback_url
-        }, (error, response, body) => {
-
-            if (error || response.statusCode != 200) {
-                runningAuth.error = body;
-            }
-
-            let tokens = JSON.parse(body);
-            tokens.expires_at = Math.floor(Date.now() / 1000) + tokens.expires_in;
-            delete tokens.expires_in;
+    let requestToken = async (authCode) => {
+        try {
+            let tokens = await apiService.requestToken(runningAuth.simulation_mode, authCode, runningAuth.client_id, runningAuth.client_secret, runningAuth.callback_url);
             tokenStorage.saveTokens(runningAuth.node_id, tokens);
-
             runningAuth.tokens = tokens;
-        });
+        } catch (err) {
+            runningAuth.error = err;
+        }
     };
 
     RED.httpAdmin.get('/homeconnect/auth/start', (req, res) => {
@@ -141,7 +126,7 @@ module.exports = function (RED) {
             return;
         }
 
-        pollToken(req.query.code);
+        requestToken(req.query.code);
 
         res.sendStatus(200);
     });
