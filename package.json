@@ -2,6 +2,7 @@
   "name": "node-red-contrib-homeconnect",
   "version": "0.4.1",
   "description": "Node-RED-nodes for Home Connect",
+  "author": "Alexander Knöbel <alex-git@knoebel.info>",
   "contributors": [
     "Alexander Knöbel <alex-git@knoebel.info>",
     "Patrick Hieber <patrickhieber92@gmail.com>"
@@ -36,5 +37,9 @@
   },
   "devDependencies": {
     "eslint": "^6.8.0"
-  }
+  },
+  "files": [
+    "/lib",
+    "/nodes"
+  ]
 }
