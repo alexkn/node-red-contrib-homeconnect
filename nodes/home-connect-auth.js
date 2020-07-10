@@ -8,6 +8,7 @@ module.exports = function (RED) {
 
         this.name = config.name;
         this.simulation_mode = config.simulation_mode;
+        this.callback_url = config.callback_url;
         this.scope = config.scope;
         this.client_id = this.credentials.client_id;
         this.client_secret = this.credentials.client_secret;
@@ -105,7 +106,7 @@ module.exports = function (RED) {
             client_id: req.query.client_id,
             client_secret: req.query.client_secret,
             scope: req.query.scope,
-            callback_url: req.protocol + '://' + req.get('host') + '/homeconnect/auth/callback',
+            callback_url: req.query.callback_url || req.protocol + '://' + req.get('host') + '/homeconnect/auth/callback',
             simulation_mode: (req.query.simulation_mode == 'true')
         };
 

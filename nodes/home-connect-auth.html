@@ -12,7 +12,8 @@
         defaults: {
             name: { value: '' },
             simulation_mode: { value: false },
-            scope: { value: ''}
+            scope: { value: ''},
+            callback_url: { type: 'text', value: ''}
         },
         credentials: {
             client_id: { type: 'text', required: true },
@@ -25,6 +26,14 @@
         icon: 'bridge.png',
         oneditprepare: function() {
             var node = this;
+
+            let callback_url = $.trim($('#node-config-input-callback_url').val());
+
+            if (!callback_url) {
+                callback_url = location.host + location.pathname + '/homeconnect/auth/callback';
+                callback_url = location.protocol + '//' + callback_url.replace(/\/\//g, '/');
+                $('#node-config-input-callback_url').val(callback_url);
+            }
 
             let polltoken = function () {
                 $.getJSON('homeconnect/auth/polltoken', {}, function(response) {
@@ -47,12 +56,14 @@
                 let client_secret = $('#node-config-input-client_secret').val();
                 let scope = $('#node-config-input-scope').val();
                 let simulation_mode = $('#node-config-input-simulation_mode').prop('checked');
+                let callback_url = $.trim($('#node-config-input-callback_url').val());
 
                 $.getJSON('homeconnect/auth/start', {
                     node_id: node.id,
                     client_id: client_id,
                     client_secret: client_secret,
                     simulation_mode: simulation_mode,
+                    callback_url: callback_url,
                     scope: scope
                 }, function(response) {
                     window.open(response.url);
@@ -91,6 +102,10 @@
     <div class="form-row">
         <label for="node-config-input-simulation_mode">Use Simulation</label>
         <input type="checkbox" id="node-config-input-simulation_mode">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-callback_url">Callback URL</label>
+        <input type="text" id="node-config-input-callback_url">
     </div>
     <div class="form-row">
         <button class="btn" id="node-config-button-start-auth">Start authorization</button>
