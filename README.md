@@ -7,7 +7,7 @@ To use the HomeConnect nodes a Client ID and Client Secret are required. Those c
 https://developer.home-connect.com/
 
 * After setting up an account, register a new application and select **Authorization Code Grant Flow** as the OAuth Flow.
-* Set the Redirect URI to `http://<ip-address>:<port>/homeconnect/auth/callback`. Set the `ip-address` and `port` to match your Node-RED installation.
+* Use the callback URL that is configured in the auth node as Redirect URI of your application. 
 
 ### Available Nodes
 - [home-connect-auth](#home-connect-auth)
