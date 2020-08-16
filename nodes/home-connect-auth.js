@@ -123,9 +123,12 @@ module.exports = function (RED) {
             return;
         }
 
-        requestToken(req.query.code);
-
-        res.sendStatus(200);
+        if (req.query.code) {
+            requestToken(req.query.code);
+            res.sendStatus(200);
+        } else {
+            res.send({'error': req.query.error, 'error_description': req.query.error_description});
+        }
     });
 
     RED.httpAdmin.get('/homeconnect/auth/polltoken', (req, res) => {
