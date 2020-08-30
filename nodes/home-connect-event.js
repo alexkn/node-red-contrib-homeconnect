@@ -40,6 +40,7 @@ module.exports = function (RED) {
             node.eventSource.addEventListener('NOTIFY', node.handleMessage);
             node.eventSource.addEventListener('DISCONNECTED', node.handleMessage);
             node.eventSource.addEventListener('CONNECTED', node.handleMessage);
+            node.eventSource.addEventListener('KEEP-ALIVE', node.handleMessage);
         };
 
         node.onOpen = () => {
@@ -52,6 +53,8 @@ module.exports = function (RED) {
         };
 
         node.handleMessage = (event) => {
+            node.status({ fill: 'green', shape: 'dot', text: 'last: ' + new Date().toISOString() });
+
             let data = undefined;
             if(event.data) {
                 data = JSON.parse(event.data);
@@ -81,6 +84,7 @@ module.exports = function (RED) {
                 node.eventSource.removeEventListener('NOTIFY', node.handleMessage);
                 node.eventSource.removeEventListener('DISCONNECTED', node.handleMessage);
                 node.eventSource.removeEventListener('CONNECTED', node.handleMessage);
+                node.eventSource.removeEventListener('KEEP-ALIVE', node.handleMessage);
                 node.eventSource.removeEventListener('open', node.onOpen);
                 node.eventSource.removeEventListener('error', node.onError);
                 node.eventSource.close();
