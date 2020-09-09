@@ -13,20 +13,20 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### Added
 
-- configurable authorization callback_url
+* configurable authorization callback_url
 
 ## [0.4.2] - 2020-02-17
 
 ### Changed
 
-- update dependencies
-- package cleanup
+* update dependencies
+* package cleanup
 
 ## [0.4.1] - 2019-12-30
 
 ### Fixed
 
-- refresh timer does not start
+* refresh timer does not start
 
 ## [0.4.0] - 2019-12-29
 
@@ -34,10 +34,10 @@ First release to npm from repository alexkn/node-red-contrib-homeconnect
 
 ### Added
 
-- home-connect-event node
+* home-connect-event node
 
 ### Changed
 
-- refactored home-connect-auth to config node
+* refactored home-connect-auth to config node
 
-- many small changes...
+* many small changes...
