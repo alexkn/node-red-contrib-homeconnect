@@ -8,6 +8,7 @@ module.exports = function (RED) {
         this.name = config.name;
         this.haid = config.haid;
         this.eventSource = null;
+        this.keepAliveTimeout = null;
 
         this.status({ fill: 'red', shape: 'ring', text: 'not connected' });
         this.auth.register(this);
@@ -23,6 +24,7 @@ module.exports = function (RED) {
             if(!node.haid) {
                 return;
             }
+            node.status({ fill: 'yellow', shape: 'dot', text: 'connecting...' });
 
             let url = node.auth.getHost() + '/api/homeappliances/' + node.haid + '/events';
 
@@ -40,20 +42,30 @@ module.exports = function (RED) {
             node.eventSource.addEventListener('NOTIFY', node.handleMessage);
             node.eventSource.addEventListener('DISCONNECTED', node.handleMessage);
             node.eventSource.addEventListener('CONNECTED', node.handleMessage);
-            node.eventSource.addEventListener('KEEP-ALIVE', node.handleMessage);
+            node.eventSource.addEventListener('KEEP-ALIVE', node.handleKeepAliveMessage);
         };
 
         node.onOpen = () => {
-            node.status({ fill: 'green', shape: 'dot', text: 'ready' });
+            node.status({ fill: 'green', shape: 'dot', text: 'connected' });
         };
 
         node.onError = (error) => {
             node.error(JSON.stringify(error));
-            node.status({ fill: 'red', shape: 'ring', text: error.message });
+
+            if (error.status == 429) { // Too Many Requests
+                node.closeEventSource();
+                node.resetKeepAliveTimeout();
+            }
+        };
+
+        node.handleKeepAliveMessage = () => {
+            node.debug('keep-alive received');
+            node.resetKeepAliveTimeout();
         };
 
         node.handleMessage = (event) => {
-            node.status({ fill: 'green', shape: 'dot', text: 'last: ' + new Date().toISOString() });
+            node.debug('message received');
+            node.resetKeepAliveTimeout();
 
             let data = undefined;
             if(event.data) {
@@ -84,18 +96,29 @@ module.exports = function (RED) {
                 node.eventSource.removeEventListener('NOTIFY', node.handleMessage);
                 node.eventSource.removeEventListener('DISCONNECTED', node.handleMessage);
                 node.eventSource.removeEventListener('CONNECTED', node.handleMessage);
-                node.eventSource.removeEventListener('KEEP-ALIVE', node.handleMessage);
+                node.eventSource.removeEventListener('KEEP-ALIVE', node.handleKeepAliveMessage);
                 node.eventSource.removeEventListener('open', node.onOpen);
                 node.eventSource.removeEventListener('error', node.onError);
                 node.eventSource.close();
-                this.status({ fill: 'red', shape: 'ring', text: 'disconnected' });
             }
         };
 
         node.on('close', () => {
             node.closeEventSource();
+            clearTimeout(node.keepAliveTimeout);
+            this.status({ fill: 'red', shape: 'ring', text: 'disconnected' });
             node.auth.unregister(this);
         });
+
+        node.resetKeepAliveTimeout = () => {
+            clearTimeout(node.keepAliveTimeout);
+            node.keepAliveTimeout = setTimeout(() => {
+                node.log('connection lost, reconnect...');
+                this.status({ fill: 'red', shape: 'ring', text: 'connection lost' });
+                node.closeEventSource();
+                node.initEventSource();
+            }, 60 * 1000);
+        };
     }
 
     RED.nodes.registerType('home-connect-event', HomeConnectEvent);
