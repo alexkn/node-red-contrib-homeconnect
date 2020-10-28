@@ -23,7 +23,7 @@ module.exports = function (RED) {
         };
 
         node.getAccessToken = () => {
-            return node.tokens.access_token; 
+            return node.tokens.access_token;
         };
 
         node.refreshTokens = async () => {
@@ -38,7 +38,7 @@ module.exports = function (RED) {
                 node.AccessTokenRefreshed();
             } catch(err) {
                 node.error(err);
-            }           
+            }
         };
 
         node.startRefreshTokenTimer = () => {
@@ -66,15 +66,9 @@ module.exports = function (RED) {
             }
         };
 
-        let nodeStarted = () => {
-            node.refreshTokens();
-        };
-
-        RED.events.on('nodes-started', nodeStarted);
+        node.refreshTokens();
 
         node.on('close', () => {
-            RED.events.off('nodes-started', nodeStarted);
-
             if(node.refreshTokenTimer) {
                 clearTimeout(node.refreshTokenTimer);
                 node.refreshTokenTimer = null;
