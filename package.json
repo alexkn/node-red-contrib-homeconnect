@@ -34,10 +34,10 @@
   "dependencies": {
     "eventsource": "^1.0.7",
     "request": "^2.88.2",
-    "swagger-client": "^3.10.12"
+    "swagger-client": "^3.11.1"
   },
   "devDependencies": {
-    "eslint": "^7.8.1",
+    "eslint": "^7.12.1",
     "standard-version": "^9.0.0"
   },
   "files": [
