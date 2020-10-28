@@ -16,39 +16,36 @@ module.exports = function (RED) {
         this.refreshTokenTimer = null;
         this.nodes = {};
 
-        const node = this;
-
-        node.getHost = () => {
-            return apiService.getHost(node.simulation_mode);
+        this.getHost = () => {
+            return apiService.getHost(this.simulation_mode);
         };
 
-        node.getAccessToken = () => {
-            return node.tokens.access_token;
+        this.getAccessToken = () => {
+            return this.tokens.access_token;
         };
 
-        node.refreshTokens = async () => {
-            if(!node.tokens.refresh_token) return;
+        this.refreshTokens = async () => {
+            if(!this.tokens.refresh_token) return;
 
-            node.log('refreshing token...');
+            this.log('refreshing token...');
             try {
-                let tokens = await apiService.refreshToken(node.simulation_mode, node.client_secret, node.tokens.refresh_token, node.client_id);
-                node.tokens = tokens;
-                tokenStorage.saveTokens(node.id, node.tokens);
-                node.startRefreshTokenTimer();
-                node.AccessTokenRefreshed();
+                this.tokens = await apiService.refreshToken(this.simulation_mode, this.client_secret, this.tokens.refresh_token, this.client_id);
+                tokenStorage.saveTokens(this.id, this.tokens);
+                this.startRefreshTokenTimer();
+                this.AccessTokenRefreshed();
             } catch(err) {
-                node.error(err);
+                this.error(err);
             }
         };
 
-        node.startRefreshTokenTimer = () => {
-            if(node.refreshTokenTimer) {
-                clearTimeout(node.refreshTokenTimer);
-                node.refreshTokenTimer = null;
+        this.startRefreshTokenTimer = () => {
+            if(this.refreshTokenTimer) {
+                clearTimeout(this.refreshTokenTimer);
+                this.refreshTokenTimer = null;
             }
-            let expires_in = node.tokens.expires_at * 1000 - Date.now();
-            node.refreshTokenTimer = setTimeout(() => {
-                node.refreshTokens();
+            let expires_in = this.tokens.expires_at * 1000 - Date.now();
+            this.refreshTokenTimer = setTimeout(() => {
+                this.refreshTokens();
             }, expires_in);
         };
 
@@ -66,12 +63,12 @@ module.exports = function (RED) {
             }
         };
 
-        node.refreshTokens();
+        this.refreshTokens();
 
-        node.on('close', () => {
-            if(node.refreshTokenTimer) {
-                clearTimeout(node.refreshTokenTimer);
-                node.refreshTokenTimer = null;
+        this.on('close', () => {
+            if(this.refreshTokenTimer) {
+                clearTimeout(this.refreshTokenTimer);
+                this.refreshTokenTimer = null;
             }
         });
     }
@@ -85,12 +82,13 @@ module.exports = function (RED) {
     let runningAuth = null;
 
     let requestToken = async (authCode) => {
+        let auth = runningAuth;
         try {
-            let tokens = await apiService.requestToken(runningAuth.simulation_mode, authCode, runningAuth.client_id, runningAuth.client_secret, runningAuth.callback_url);
-            tokenStorage.saveTokens(runningAuth.node_id, tokens);
-            runningAuth.tokens = tokens;
+            let tokens = await apiService.requestToken(auth.simulation_mode, authCode, auth.client_id, auth.client_secret, auth.callback_url);
+            tokenStorage.saveTokens(auth.node_id, tokens);
+            auth.tokens = tokens;
         } catch (err) {
-            runningAuth.error = err;
+            auth.error = err;
         }
     };
 
