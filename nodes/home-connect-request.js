@@ -64,9 +64,10 @@ module.exports = function (RED) {
 
                     node.send(msg);
                 })
+                // eslint-disable-next-line no-unused-vars
                 .catch(error => {
-                    msg.error = error;
-                    node.send(msg);
+                    // already handled in responseInterceptor
+                    //node.error(error);
                 });
         });
 
@@ -81,6 +82,14 @@ module.exports = function (RED) {
                     requestInterceptor: req => {
                         req.headers['accept'] = 'application/vnd.bsh.sdk.v1+json, image/jpeg',
                         req.headers['authorization'] = 'Bearer ' + node.auth.getAccessToken();
+                        return req;
+                    },
+                    responseInterceptor: res => {
+                        if(!res.ok) {
+                            // node.debug(JSON.stringify(res,null,2));
+                            node.error(res.status + ' ' + res.statusText + ' ' + res.body.error.key + ': ' + res.body.error.description);
+                        }
+                        return res;
                     }
                 })
                     .then(client => {
@@ -88,7 +97,7 @@ module.exports = function (RED) {
                         node.status({ fill: 'green', shape: 'dot', text: 'ready' });
                     })
                     .catch(error => {
-                        console.log(error);
+                        console.error(error);
                     });
             }
         };
