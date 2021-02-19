@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.6.2](https://github.com/alexkn/node-red-contrib-homeconnect/compare/v0.6.1...v0.6.2) (2021-02-19)
+
+
+### Bug Fixes
+
+* improve logging for request errors ([78f3c9a](https://github.com/alexkn/node-red-contrib-homeconnect/commit/78f3c9a7206abd480a7e766300b6c30f6943ff2a))
+
 ### [0.6.1](https://github.com/alexkn/node-red-contrib-homeconnect/compare/v0.6.0...v0.6.1) (2020-10-28)
 
 
