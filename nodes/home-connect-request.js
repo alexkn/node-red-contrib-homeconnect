@@ -32,44 +32,43 @@ module.exports = function (RED) {
             node.getSwaggerClient();
         };
 
-        node.on('input', msg => {
+        node.on('input', async (msg) => {
             if(!node.client) {
                 node.error('auth not ready');
                 return;
             }
 
-            let tag = node.tag || msg.tag;
-            let operationId = node.operationId || msg.operationId;
-            node.client.apis[tag][operationId]({
-                haid: node.haid || msg.haid,
-                body: node.body || msg.body,
-                optionkey: node.optionkey || msg.optionkey,
-                programkey: node.programkey || msg.programkey,
-                statuskey: node.statuskey || msg.statuskey,
-                imagekey: node.imagekey || msg.imagekey,
-                settingkey: node.settingkey || msg.settingkey
-            })
-                .then(response => {
-                    let res = response.data;
-
-                    try {
-                        if(res && res.length > 0) {
-                            res = JSON.parse(res);
-                        }
-                    } catch (error) {
-                        node.error(error.message);
-                    }
-
-                    msg.status = response.status;
-                    msg.statusText = response.statusText;
-                    msg.payload = res;
-
-                    node.send(msg);
-                })
-                .catch(error => {
-                    let bodyError = error.response.body.error;
-                    node.error(new HomeConnectError(error.status, bodyError ? bodyError.key : null, bodyError ? bodyError.description : error.statusText));
+            try {
+                let tag = node.tag || msg.tag;
+                let operationId = node.operationId || msg.operationId;
+                let response = await node.client.apis[tag][operationId]({
+                    haid: node.haid || msg.haid,
+                    body: node.body || msg.body,
+                    optionkey: node.optionkey || msg.optionkey,
+                    programkey: node.programkey || msg.programkey,
+                    statuskey: node.statuskey || msg.statuskey,
+                    imagekey: node.imagekey || msg.imagekey,
+                    settingkey: node.settingkey || msg.settingkey
                 });
+                let res = response.data;
+
+                try {
+                    if(res && res.length > 0) {
+                        res = JSON.parse(res);
+                    }
+                } catch (error) {
+                    node.error(error.message);
+                }
+
+                msg.status = response.status;
+                msg.statusText = response.statusText;
+                msg.payload = res;
+
+                node.send(msg);
+            } catch (error) {
+                let bodyError = error.response.body.error;
+                node.error(new HomeConnectError(error.status, bodyError ? bodyError.key : null, bodyError ? bodyError.description : error.statusText));
+            }
         });
 
         node.on('close', () => {
