@@ -1,3 +1,5 @@
+const HomeConnectError = require('../lib/HomeConnectError');
+
 module.exports = function (RED) {
     const SwaggerClient = require('swagger-client');
 
@@ -64,10 +66,9 @@ module.exports = function (RED) {
 
                     node.send(msg);
                 })
-                // eslint-disable-next-line no-unused-vars
                 .catch(error => {
-                    // already handled in responseInterceptor
-                    //node.error(error);
+                    let bodyError = error.response.body.error;
+                    node.error(new HomeConnectError(error.status, bodyError ? bodyError.key : null, bodyError ? bodyError.description : error.statusText));
                 });
         });
 
@@ -83,13 +84,6 @@ module.exports = function (RED) {
                         req.headers['accept'] = 'application/vnd.bsh.sdk.v1+json, image/jpeg',
                         req.headers['authorization'] = 'Bearer ' + node.auth.getAccessToken();
                         return req;
-                    },
-                    responseInterceptor: res => {
-                        if(!res.ok) {
-                            // node.debug(JSON.stringify(res,null,2));
-                            node.error(res.status + ' ' + res.statusText + ' ' + res.body.error.key + ': ' + res.body.error.description);
-                        }
-                        return res;
                     }
                 })
                     .then(client => {
