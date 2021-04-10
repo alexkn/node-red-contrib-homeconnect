@@ -32,7 +32,7 @@ module.exports = function (RED) {
             node.getSwaggerClient();
         };
 
-        node.on('input', async (msg) => {
+        node.on('input', async (msg, send, done) => {
             if(!node.client) {
                 node.error('auth not ready');
                 return;
@@ -50,24 +50,19 @@ module.exports = function (RED) {
                     imagekey: node.imagekey || msg.imagekey,
                     settingkey: node.settingkey || msg.settingkey
                 });
-                let res = response.data;
-
-                try {
-                    if(res && res.length > 0) {
-                        res = JSON.parse(res);
-                    }
-                } catch (error) {
-                    node.error(error.message);
-                }
 
                 msg.status = response.status;
                 msg.statusText = response.statusText;
-                msg.payload = res;
+                msg.payload = response.body;
 
-                node.send(msg);
+                send(msg);
             } catch (error) {
-                let bodyError = error.response.body.error;
-                node.error(new HomeConnectError(error.status, bodyError ? bodyError.key : null, bodyError ? bodyError.description : error.statusText));
+                if(error.response) {
+                    let bodyError = error.response.body.error;
+                    done(new HomeConnectError(error.status, bodyError ? bodyError.key : null, bodyError ? bodyError.description : error.message));
+                } else {
+                    done(error);
+                }
             }
         });
 
