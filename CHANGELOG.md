@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.6.4](https://github.com/alexkn/node-red-contrib-homeconnect/compare/v0.6.3...v0.6.4) (2021-08-06)
+
+
+### Bug Fixes
+
+* Haid parameters renamed due to changed homeconnect api ([36244dc](https://github.com/alexkn/node-red-contrib-homeconnect/commit/36244dc3dccfea635b063b6922f3f6ce2daaf790)), closes [#46](https://github.com/alexkn/node-red-contrib-homeconnect/issues/46)
+
 ### [0.6.3](https://github.com/alexkn/node-red-contrib-homeconnect/compare/v0.6.2...v0.6.3) (2021-04-10)
 
 
