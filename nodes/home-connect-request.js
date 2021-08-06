@@ -42,7 +42,7 @@ module.exports = function (RED) {
                 let tag = node.tag || msg.tag;
                 let operationId = node.operationId || msg.operationId;
                 let response = await node.client.apis[tag][operationId]({
-                    haid: node.haid || msg.haid,
+                    haId: node.haid || msg.haid,
                     body: node.body || msg.body,
                     optionkey: node.optionkey || msg.optionkey,
                     programkey: node.programkey || msg.programkey,
