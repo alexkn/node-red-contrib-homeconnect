@@ -11,7 +11,9 @@ module.exports = function (RED) {
         this.keepAliveTimeout = null;
 
         this.status({ fill: 'red', shape: 'ring', text: 'not connected' });
-        this.auth.register(this);
+
+        if(this.auth)
+            this.auth.register(this);
 
         const node = this;
 
