@@ -37,13 +37,13 @@
     "swagger-client": "^3.18.5"
   },
   "devDependencies": {
-    "@types/mocha": "^9.1.1",
+    "@types/mocha": "^10.0.1",
     "@types/node-red": "^1.2.1",
     "@types/node-red-node-test-helper": "^0.2.2",
-    "eslint": "^8.17.0",
-    "mocha": "^10.0.0",
-    "node-red": "^2.2.2",
-    "node-red-node-test-helper": "^0.2.7",
+    "eslint": "^8.29.0",
+    "mocha": "^10.1.0",
+    "node-red": "^3.0.2",
+    "node-red-node-test-helper": "^0.3.0",
     "standard-version": "^9.5.0"
   },
   "files": [
