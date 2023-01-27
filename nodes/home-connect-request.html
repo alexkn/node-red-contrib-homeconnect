@@ -105,6 +105,16 @@
                 text: 'get_image',
                 scopes: ['haid', 'imagekey']
             }
+        },
+        commands: {
+            'get_available_commands': {
+                text: 'get_available_commands',
+                scopes: ['haid']
+            },
+            'put_command': {
+                text: 'put_command',
+                scopes: ['haid', 'body', 'commandkey']
+            }
         }
     };
 
@@ -120,6 +130,7 @@
             optionkey: { value: '' },
             programkey: { value: '' },
             settingkey: { value: '' },
+            commandkey: { value: '' },
             statuskey: { value: '' },
             imagekey: { value: '' }
         },
@@ -183,6 +194,11 @@
                     $('#node-input-settingkey').parent().css('display', 'none');
                 } else {
                     $('#node-input-settingkey').parent().css('display', 'block');
+                }
+                if (item && $.inArray('commandkey', item.scopes) == -1) {
+                    $('#node-input-commandkey').parent().css('display', 'none');
+                } else {
+                    $('#node-input-commandkey').parent().css('display', 'block');
                 }
                 if (item && $.inArray('statuskey', item.scopes) == -1) {
                     $('#node-input-statuskey').parent().css('display', 'none');
@@ -255,6 +271,7 @@
             <option value="settings">Settings</option>
             <option value="status_events">Status</option>
             <option value="images">Images</option>
+            <option value="commands">Commands</option>
         </select>
     </div>
     <div class="form-row">
@@ -285,6 +302,8 @@
             <option value="get_status_value">get_status_value</option>
             <option value="get_images">get_images</option>
             <option value="get_image">get_image</option>
+            <option value="get_available_commands">get_available_commands</option>
+            <option value="put_command">put_command</option>
         </select>
         <a target="_blank" id="node-help-operationId" href="#">Help</a>
     </div>
@@ -311,6 +330,10 @@
     <div class="form-row">
         <label for="node-input-programkey">Setting Key</label>
         <input type="text" id="node-input-settingkey">
+    </div>
+    <div class="form-row">
+        <label for="node-input-programkey">Comand Key</label>
+        <input type="text" id="node-input-commandkey">
     </div>
     <div class=""form-row>
         <label for="node-input-body">Body</label>

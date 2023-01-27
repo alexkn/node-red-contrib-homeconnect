@@ -14,6 +14,7 @@ module.exports = function (RED) {
         this.optionkey = config.optionkey;
         this.programkey = config.programkey;
         this.settingkey = config.settingkey;
+        this.commandkey = config.commandkey;
         this.statuskey = config.statuskey;
         this.imagekey = config.imagekey;
         this.body = config.body;
@@ -39,10 +40,11 @@ module.exports = function (RED) {
                 node.error('auth not ready');
                 return;
             }
-
+            
             try {
                 let tag = node.tag || msg.tag;
                 let operationId = node.operationId || msg.operationId;
+
                 let response = await node.client.apis[tag][operationId]({
                     haId: node.haid || msg.haid,
                     body: node.body || msg.body,
@@ -50,6 +52,7 @@ module.exports = function (RED) {
                     programkey: node.programkey || msg.programkey,
                     statuskey: node.statuskey || msg.statuskey,
                     imagekey: node.imagekey || msg.imagekey,
+                    commandkey: node.commandkey || msg.commandkey,
                     settingkey: node.settingkey || msg.settingkey
                 });
 
