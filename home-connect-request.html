@@ -1,0 +1,342 @@
+<script type="text/javascript">
+    const data = {
+        default: {
+            'get_home_appliances': {
+                text: 'get_home_appliances',
+                scopes: []
+            },
+            'get_specific_appliance': {
+                text: 'get_specific_appliance',
+                scopes: ['haid']
+            }
+        },
+        programs: {
+            'get_active_program': {
+                text: 'get_active_program',
+                scopes: ['haid']
+            },
+            'start_program': {
+                text: 'start_program',
+                scopes: ['haid', 'body']
+            },
+            'stop_program': {
+                text: 'stop_program',
+                scopes: ['haid']
+            },
+            'get_active_program_options': {
+                text: 'get_active_program_options',
+                scopes: ['haid']
+            },
+            'set_active_program_options': {
+                text: 'set_active_program_options',
+                scopes: ['haid', 'body']
+            },
+            'get_active_program_option': {
+                text: 'get_active_program_option',
+                scopes: ['haid', 'optionkey']
+            },
+            'set_active_program_option': {
+                text: 'set_active_program_option',
+                scopes: ['haid', 'body', 'optionkey']
+            },
+            'get_selected_program': {
+                text: 'get_selected_program',
+                scopes: ['haid']
+            },
+            'set_selected_program': {
+                text: 'set_selected_program',
+                scopes: ['haid', 'body']
+            },
+            'get_selected_program_options': {
+                text: 'get_selected_program_options',
+                scopes: ['haid']
+            },
+            'set_selected_program_options': {
+                text: 'set_selected_program_options',
+                scopes: ['haid', 'body']
+            },
+            'get_selected_program_option': {
+                text: 'get_selected_program_option',
+                scopes: ['haid', 'optionkey']
+            },
+            'set_selected_program_option': {
+                text: 'set_selected_program_option',
+                scopes: ['haid', 'body', 'optionkey']
+            },
+            'get_available_programs': {
+                text: 'get_available_programs',
+                scopes: ['haid']
+            },
+            'get_available_program': {
+                text: 'get_available_program',
+                scopes: ['haid', 'programkey']
+            },
+        },
+        settings: {
+            'get_settings': {
+                text: 'get_settings',
+                scopes: ['haid']
+            },
+            'get_setting': {
+                text: 'get_setting',
+                scopes: ['haid', 'settingkey']
+            },
+            'set_setting': {
+                text: 'set_setting',
+                scopes: ['haid', 'body', 'settingkey']
+            }
+        },
+        status_events: {
+            'get_status': {
+                text: 'get_status',
+                scopes: ['haid']
+            },
+            'get_status_value': {
+                text: 'get_status_value',
+                scopes: ['haid', 'statuskey']
+            }
+        },
+        images: {
+            'get_images': {
+                text: 'get_images',
+                scopes: ['haid']
+            },
+            'get_image': {
+                text: 'get_image',
+                scopes: ['haid', 'imagekey']
+            }
+        },
+        commands: {
+            'get_available_commands': {
+                text: 'get_available_commands',
+                scopes: ['haid']
+            },
+            'put_command': {
+                text: 'put_command',
+                scopes: ['haid', 'body', 'commandkey']
+            }
+        }
+    };
+
+    RED.nodes.registerType('home-connect-request', {
+        category: 'HomeConnect',
+        defaults: {
+            auth: {value:"", type:"home-connect-auth", required: true},
+            name: { value: '' },
+            tag: { value: '' },
+            operationId: { value: '' },
+            haid: { value: '' },
+            body: { value: '' },
+            optionkey: { value: '' },
+            programkey: { value: '' },
+            settingkey: { value: '' },
+            commandkey: { value: '' },
+            statuskey: { value: '' },
+            imagekey: { value: '' }
+        },
+        inputs: 1,
+        outputs: 1,
+        label: function () {
+            return this.name || this.operationId || 'home-connect-request';
+        },
+        color: '#2392d8',
+        icon: 'bridge.png',
+        oneditprepare: function () {
+            let checkForHAID = () => {
+                let tag = $('#node-input-tag').val();
+                let operationId = $('#node-input-operationId').val();
+                let item = null;
+                try {
+                    item = data[tag][operationId];
+                } catch {}
+
+                if (item && $.inArray('haid', item.scopes) == -1) {
+                    $('#node-input-haid').attr('disabled', true);
+                } else {
+                    $('#node-input-haid').attr('disabled', false);
+                }
+            };
+
+            let checkForBody = () => {
+                let tag = $('#node-input-tag').val();
+                let operationId = $('#node-input-operationId').val();
+                let item = null;
+                try {
+                    item = data[tag][operationId];
+                } catch {}
+
+                if (item && $.inArray('body', item.scopes) == -1) {
+                    $('#node-input-body').attr('disabled', true);
+                } else {
+                    $('#node-input-body').attr('disabled', false);
+                }
+            };
+
+            let checkForKey = () => {
+                let tag = $('#node-input-tag').val();
+                let operationId = $('#node-input-operationId').val();
+                let item = null;
+                try {
+                    item = data[tag][operationId];
+                } catch {}
+
+                if (item && $.inArray('optionkey', item.scopes) == -1) {
+                    $('#node-input-optionkey').parent().css('display', 'none');
+                } else {
+                    $('#node-input-optionkey').parent().css('display', 'block');
+                }
+                if (item && $.inArray('programkey', item.scopes) == -1) {
+                    $('#node-input-programkey').parent().css('display', 'none');
+                } else {
+                    $('#node-input-programkey').parent().css('display', 'block');
+                }
+                if (item && $.inArray('settingkey', item.scopes) == -1) {
+                    $('#node-input-settingkey').parent().css('display', 'none');
+                } else {
+                    $('#node-input-settingkey').parent().css('display', 'block');
+                }
+                if (item && $.inArray('commandkey', item.scopes) == -1) {
+                    $('#node-input-commandkey').parent().css('display', 'none');
+                } else {
+                    $('#node-input-commandkey').parent().css('display', 'block');
+                }
+                if (item && $.inArray('statuskey', item.scopes) == -1) {
+                    $('#node-input-statuskey').parent().css('display', 'none');
+                } else {
+                    $('#node-input-statuskey').parent().css('display', 'block');
+                }
+                if (item && $.inArray('imagekey', item.scopes) == -1) {
+                    $('#node-input-imagekey').parent().css('display', 'none');
+                } else {
+                    $('#node-input-imagekey').parent().css('display', 'block');
+                }
+            };
+
+            let setHelpLink = () => {
+                let tag = $('#node-input-tag').val();
+                let operationId = $('#node-input-operationId').val();
+
+                $('#node-help-operationId').attr('href', 'https://apiclient.home-connect.com/#/' + tag + '/' + operationId);
+            };
+
+            $('#node-input-tag')
+            .change(function () {
+                let tag = $('#node-input-tag').val();
+                
+                if (tag != undefined) {
+                    let items = data[tag];
+
+                    $('#node-input-operationId option').each((index, elem) => {
+                        let program = $(elem).val();
+                        if(items && (!program || items[program])) {
+                            $(elem).show();
+                        }else{
+                            $(elem).hide();
+                            $(elem).prop("selected", false);
+                        }
+                    });
+                }
+
+                checkForHAID();
+                checkForBody();
+                checkForKey();
+                setHelpLink();
+            });
+
+            $('#node-input-operationId')
+            .change(function () {
+                checkForHAID();
+                checkForBody();
+                checkForKey();
+                setHelpLink();
+            });
+        }
+    });
+</script>
+<script type="text/x-red" data-template-name="home-connect-request">
+    <div class="form-row">
+        <label for="node-input-auth"><i class="icon-tag"></i> Auth</label>
+        <select id="node-input-auth"></select>
+    </div>
+    <div class="form-row">
+        <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+        <input type="text" id="node-input-name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-tag">Tag</label>
+        <select name="node-input-tag" id="node-input-tag">
+            <option value=""></option>
+            <option value="default">General</option>
+            <option value="programs">Program</option>
+            <option value="settings">Settings</option>
+            <option value="status_events">Status</option>
+            <option value="images">Images</option>
+            <option value="commands">Commands</option>
+        </select>
+    </div>
+    <div class="form-row">
+        <label for="node-input-operationId">Action</label>
+        <select name="node-input-operationId" id="node-input-operationId">
+            <option value=""></option>
+            <option value="get_home_appliances">get_home_appliances</option>
+            <option value="get_specific_appliance">get_specific_appliance</option>
+            <option value="get_active_program">get_active_program</option>
+            <option value="start_program">start_program</option>
+            <option value="stop_program">stop_program</option>
+            <option value="get_active_program_options">get_active_program_options</option>
+            <option value="set_active_program_options">set_active_program_options</option>
+            <option value="get_active_program_option">get_active_program_option</option>
+            <option value="set_active_program_option">set_active_program_option</option>
+            <option value="get_selected_program">get_selected_program</option>
+            <option value="set_selected_program">set_selected_program</option>
+            <option value="get_selected_program_options">get_selected_program_options</option>
+            <option value="set_selected_program_options">set_selected_program_options</option>
+            <option value="get_selected_program_option">get_selected_program_option</option>
+            <option value="set_selected_program_option">set_selected_program_option</option>
+            <option value="get_available_programs">get_available_programs</option>
+            <option value="get_available_program">get_available_program</option>
+            <option value="get_settings">get_settings</option>
+            <option value="get_setting">get_setting</option>
+            <option value="set_setting">set_setting</option>
+            <option value="get_status">get_status</option>
+            <option value="get_status_value">get_status_value</option>
+            <option value="get_images">get_images</option>
+            <option value="get_image">get_image</option>
+            <option value="get_available_commands">get_available_commands</option>
+            <option value="put_command">put_command</option>
+        </select>
+        <a target="_blank" id="node-help-operationId" href="#">Help</a>
+    </div>
+    <div class="form-row">
+        <label for="node-input-haid">HAID</label>
+        <input type="text" id="node-input-haid">
+    </div>
+    <div class="form-row">
+        <label for="node-input-optionkey">Option Key</label>
+        <input type="text" id="node-input-optionkey">
+    </div>
+    <div class="form-row">
+        <label for="node-input-programkey">Program Key</label>
+        <input type="text" id="node-input-programkey">
+    </div>
+    <div class="form-row">
+        <label for="node-input-programkey">Status Key</label>
+        <input type="text" id="node-input-statuskey">
+    </div>
+    <div class="form-row">
+        <label for="node-input-programkey">Image Key</label>
+        <input type="text" id="node-input-imagekey">
+    </div>
+    <div class="form-row">
+        <label for="node-input-programkey">Setting Key</label>
+        <input type="text" id="node-input-settingkey">
+    </div>
+    <div class="form-row">
+        <label for="node-input-programkey">Comand Key</label>
+        <input type="text" id="node-input-commandkey">
+    </div>
+    <div class=""form-row>
+        <label for="node-input-body">Body</label>
+        <textarea rows="15" cols="60" style="width:100%;" id="node-input-body"></textarea>
+    </div>
+</script>
