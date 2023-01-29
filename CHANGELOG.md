@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.6.6](https://github.com/alexkn/node-red-contrib-homeconnect/compare/v0.6.5...v0.6.6) (2023-01-29)
+
+
+### Features
+
+* Add command interface ([#82](https://github.com/alexkn/node-red-contrib-homeconnect/issues/82)) ([5f4afc6](https://github.com/alexkn/node-red-contrib-homeconnect/commit/5f4afc64e106291715e49db60ba5f2f0087f6668))
+
 ### [0.6.5](https://github.com/alexkn/node-red-contrib-homeconnect/compare/v0.6.4...v0.6.5) (2022-01-24)
 
 ### [0.6.4](https://github.com/alexkn/node-red-contrib-homeconnect/compare/v0.6.3...v0.6.4) (2021-08-06)
