@@ -40,8 +40,8 @@
     "@types/mocha": "^10.0.1",
     "@types/node-red": "^1.2.1",
     "@types/node-red-node-test-helper": "^0.2.2",
-    "eslint": "^8.29.0",
-    "mocha": "^10.1.0",
+    "eslint": "^8.33.0",
+    "mocha": "^10.2.0",
     "node-red": "^3.0.2",
     "node-red-node-test-helper": "^0.3.0",
     "standard-version": "^9.5.0"
