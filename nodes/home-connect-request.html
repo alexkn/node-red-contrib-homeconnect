@@ -1,6 +1,6 @@
 <script type="text/javascript">
     const data = {
-        default: {
+        appliances: {
             'get_home_appliances': {
                 text: 'get_home_appliances',
                 scopes: []
@@ -86,7 +86,7 @@
                 scopes: ['haid', 'body', 'settingkey']
             }
         },
-        status_events: {
+        status: {
             'get_status': {
                 text: 'get_status',
                 scopes: ['haid']
@@ -266,10 +266,10 @@
         <label for="node-input-tag">Tag</label>
         <select name="node-input-tag" id="node-input-tag">
             <option value=""></option>
-            <option value="default">General</option>
+            <option value="appliances">Appliances</option>
             <option value="programs">Program</option>
             <option value="settings">Settings</option>
-            <option value="status_events">Status</option>
+            <option value="status">Status</option>
             <option value="images">Images</option>
             <option value="commands">Commands</option>
         </select>
