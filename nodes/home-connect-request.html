@@ -1,123 +1,4 @@
 <script type="text/javascript">
-    const data = {
-        appliances: {
-            'get_home_appliances': {
-                text: 'get_home_appliances',
-                scopes: []
-            },
-            'get_specific_appliance': {
-                text: 'get_specific_appliance',
-                scopes: ['haid']
-            }
-        },
-        programs: {
-            'get_active_program': {
-                text: 'get_active_program',
-                scopes: ['haid']
-            },
-            'start_program': {
-                text: 'start_program',
-                scopes: ['haid', 'body']
-            },
-            'stop_program': {
-                text: 'stop_program',
-                scopes: ['haid']
-            },
-            'get_active_program_options': {
-                text: 'get_active_program_options',
-                scopes: ['haid']
-            },
-            'set_active_program_options': {
-                text: 'set_active_program_options',
-                scopes: ['haid', 'body']
-            },
-            'get_active_program_option': {
-                text: 'get_active_program_option',
-                scopes: ['haid', 'optionkey']
-            },
-            'set_active_program_option': {
-                text: 'set_active_program_option',
-                scopes: ['haid', 'body', 'optionkey']
-            },
-            'get_selected_program': {
-                text: 'get_selected_program',
-                scopes: ['haid']
-            },
-            'set_selected_program': {
-                text: 'set_selected_program',
-                scopes: ['haid', 'body']
-            },
-            'get_selected_program_options': {
-                text: 'get_selected_program_options',
-                scopes: ['haid']
-            },
-            'set_selected_program_options': {
-                text: 'set_selected_program_options',
-                scopes: ['haid', 'body']
-            },
-            'get_selected_program_option': {
-                text: 'get_selected_program_option',
-                scopes: ['haid', 'optionkey']
-            },
-            'set_selected_program_option': {
-                text: 'set_selected_program_option',
-                scopes: ['haid', 'body', 'optionkey']
-            },
-            'get_available_programs': {
-                text: 'get_available_programs',
-                scopes: ['haid']
-            },
-            'get_available_program': {
-                text: 'get_available_program',
-                scopes: ['haid', 'programkey']
-            },
-        },
-        settings: {
-            'get_settings': {
-                text: 'get_settings',
-                scopes: ['haid']
-            },
-            'get_setting': {
-                text: 'get_setting',
-                scopes: ['haid', 'settingkey']
-            },
-            'set_setting': {
-                text: 'set_setting',
-                scopes: ['haid', 'body', 'settingkey']
-            }
-        },
-        status: {
-            'get_status': {
-                text: 'get_status',
-                scopes: ['haid']
-            },
-            'get_status_value': {
-                text: 'get_status_value',
-                scopes: ['haid', 'statuskey']
-            }
-        },
-        images: {
-            'get_images': {
-                text: 'get_images',
-                scopes: ['haid']
-            },
-            'get_image': {
-                text: 'get_image',
-                scopes: ['haid', 'imagekey']
-            }
-        },
-        commands: {
-            'get_available_commands': {
-                text: 'get_available_commands',
-                scopes: ['haid']
-            },
-            'put_command': {
-                text: 'put_command',
-                scopes: ['haid', 'body', 'commandkey']
-            }
-        }
-    };
-
     RED.nodes.registerType('home-connect-request', {
         category: 'HomeConnect',
         defaults: {
@@ -142,6 +23,124 @@
         color: '#2392d8',
         icon: 'bridge.png',
         oneditprepare: function () {
+            const data = {
+                appliances: {
+                    'get_home_appliances': {
+                        text: 'get_home_appliances',
+                        scopes: []
+                    },
+                    'get_specific_appliance': {
+                        text: 'get_specific_appliance',
+                        scopes: ['haid']
+                    }
+                },
+                programs: {
+                    'get_active_program': {
+                        text: 'get_active_program',
+                        scopes: ['haid']
+                    },
+                    'start_program': {
+                        text: 'start_program',
+                        scopes: ['haid', 'body']
+                    },
+                    'stop_program': {
+                        text: 'stop_program',
+                        scopes: ['haid']
+                    },
+                    'get_active_program_options': {
+                        text: 'get_active_program_options',
+                        scopes: ['haid']
+                    },
+                    'set_active_program_options': {
+                        text: 'set_active_program_options',
+                        scopes: ['haid', 'body']
+                    },
+                    'get_active_program_option': {
+                        text: 'get_active_program_option',
+                        scopes: ['haid', 'optionkey']
+                    },
+                    'set_active_program_option': {
+                        text: 'set_active_program_option',
+                        scopes: ['haid', 'body', 'optionkey']
+                    },
+                    'get_selected_program': {
+                        text: 'get_selected_program',
+                        scopes: ['haid']
+                    },
+                    'set_selected_program': {
+                        text: 'set_selected_program',
+                        scopes: ['haid', 'body']
+                    },
+                    'get_selected_program_options': {
+                        text: 'get_selected_program_options',
+                        scopes: ['haid']
+                    },
+                    'set_selected_program_options': {
+                        text: 'set_selected_program_options',
+                        scopes: ['haid', 'body']
+                    },
+                    'get_selected_program_option': {
+                        text: 'get_selected_program_option',
+                        scopes: ['haid', 'optionkey']
+                    },
+                    'set_selected_program_option': {
+                        text: 'set_selected_program_option',
+                        scopes: ['haid', 'body', 'optionkey']
+                    },
+                    'get_available_programs': {
+                        text: 'get_available_programs',
+                        scopes: ['haid']
+                    },
+                    'get_available_program': {
+                        text: 'get_available_program',
+                        scopes: ['haid', 'programkey']
+                    },
+                },
+                settings: {
+                    'get_settings': {
+                        text: 'get_settings',
+                        scopes: ['haid']
+                    },
+                    'get_setting': {
+                        text: 'get_setting',
+                        scopes: ['haid', 'settingkey']
+                    },
+                    'set_setting': {
+                        text: 'set_setting',
+                        scopes: ['haid', 'body', 'settingkey']
+                    }
+               },
+                status: {
+                    'get_status': {
+                        text: 'get_status',
+                        scopes: ['haid']
+                    },
+                    'get_status_value': {
+                        text: 'get_status_value',
+                        scopes: ['haid', 'statuskey']
+                    }
+                },
+                images: {
+                    'get_images': {
+                        text: 'get_images',
+                        scopes: ['haid']
+                    },
+                    'get_image': {
+                        text: 'get_image',
+                        scopes: ['haid', 'imagekey']
+                    }
+                },
+               commands: {
+                   'get_available_commands': {
+                        text: 'get_available_commands',
+                        scopes: ['haid']
+                    },
+                    'put_command': {
+                        text: 'put_command',
+                        scopes: ['haid', 'body', 'commandkey']
+                    }
+                }
+            };
             let checkForHAID = () => {
                 let tag = $('#node-input-tag').val();
                 let operationId = $('#node-input-operationId').val();
