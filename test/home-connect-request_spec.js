@@ -11,6 +11,7 @@ describe('home-connect-request Node', function () {
     });
 
     it('should be loaded', async function () {
+        this.timeout( 10000 );
         var flow = [{ id: 'n1', type: 'home-connect-request', name: 'test name' }];
         await helper.load(homeConnectRequestNode, flow);
         var n1 = helper.getNode('n1');

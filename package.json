@@ -34,16 +34,16 @@
   "dependencies": {
     "eventsource": "^2.0.2",
     "request": "^2.88.2",
-    "swagger-client": "^3.18.5"
+    "swagger-client": "^3.37.5"
   },
   "devDependencies": {
-    "@types/mocha": "^10.0.1",
+    "@types/mocha": "^10.0.10",
     "@types/node-red": "^1.2.1",
-    "@types/node-red-node-test-helper": "^0.2.2",
-    "eslint": "^8.33.0",
-    "mocha": "^10.2.0",
-    "node-red": "^3.0.2",
-    "node-red-node-test-helper": "^0.3.0",
+    "@types/node-red-node-test-helper": "^0.3.5",
+    "eslint": "^10.5.0",
+    "mocha": "^11.7.6",
+    "node-red": "^5.0.0",
+    "node-red-node-test-helper": "^0.3.6",
     "standard-version": "^9.5.0"
   },
   "files": [
